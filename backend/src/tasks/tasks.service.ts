@@ -1,26 +1,59 @@
+// src/tasks/tasks.service.ts
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../core/prisma/prisma.service';
+import { Prisma, Task, TaskStatus } from '@prisma/client';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
-  create(createTaskDto: CreateTaskDto) {
-    return 'This action adds a new task';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createTaskDto: CreateTaskDto & { assigneeId?: number; projectId: number }): Promise<Task> {
+    return this.prisma.task.create({
+      data: {
+      ...createTaskDto,
+      status: createTaskDto.status || 'TODO'
+    },
+    include: { project: true, assignee: true }
+    });
   }
 
-  findAll() {
-    return `This action returns all tasks`;
+  async findAll(): Promise<Task[]> {
+    return this.prisma.task.findMany({
+      include: { project: true, assignee: true }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} task`;
+  async findByAssignee(assigneeId: number, filters?: { status?: TaskStatus }): Promise<Task[]> {
+    return this.prisma.task.findMany({
+      where: { assigneeId, ...filters },
+      include: { project: true }
+    });
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+  async findByProject(projectId: number, userId: number): Promise<Task[]> {
+    return this.prisma.task.findMany({
+      where: { projectId, assigneeId: userId },
+      include: { assignee: true }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} task`;
+  async findOne(id: number): Promise<Task | null> {
+    return this.prisma.task.findUnique({
+      where: { id },
+      include: { project: true, assignee: true }
+    });
+  }
+
+  async update(id: number, data: UpdateTaskDto): Promise<Task> {
+    return this.prisma.task.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async remove(id: number): Promise<Task> {
+    return this.prisma.task.delete({ where: { id } });
   }
 }
