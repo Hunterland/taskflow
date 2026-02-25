@@ -5,23 +5,43 @@ import { PrismaService } from '../core/prisma/prisma.service';
 
 @Injectable()
 export class ProjectsService {
-  create(createProjectDto: CreateProjectDto) {
-    return 'This action adds a new project';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createProjectDto: CreateProjectDto, ownerId: number) {
+    return this.prisma.project.create({
+      data: {
+        ...createProjectDto,
+        ownerId, // ← user.id do JWT
+      },
+      include: { owner: true, tasks: true },
+    });
   }
 
-  findAll() {
-    return `This action returns all projects`;
+  async findAll() {
+    return this.prisma.project.findMany({
+      include: { owner: true, tasks: true },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} project`;
+  async findOne(id: number) {
+    return this.prisma.project.findUnique({
+      where: { id },
+      include: { owner: true, tasks: true },
+    });
   }
 
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
+  async update(id: number, updateProjectDto: UpdateProjectDto) {
+    return this.prisma.project.update({
+      where: { id },
+      data: updateProjectDto,
+      include: { owner: true, tasks: true },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  async remove(id: number) {
+    return this.prisma.project.delete({
+      where: { id },
+      include: { owner: true, tasks: true },
+    });
   }
 }
