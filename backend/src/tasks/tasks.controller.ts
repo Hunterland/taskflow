@@ -19,9 +19,9 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskStatus } from '@prisma/client';
 
 @ApiTags('Tasks')  // Agrupa no Swagger
-@Controller('tasks')
-@UseGuards(JwtAuthGuard)  // Protege TODO controller
-@ApiBearerAuth('JWT-auth')  // Swagger auth button
+@ApiBearerAuth('JWT')  // Define esquema de autenticação JWT para este controller
+@UseGuards(JwtAuthGuard)  // Aplica o guard JWT a todas as rotas deste controller
+@Controller('tasks') // Rota base para tasks
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
