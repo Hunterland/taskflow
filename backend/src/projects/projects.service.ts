@@ -1,111 +1,100 @@
 import {
   Injectable,
-  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../core/prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 
-/**
- * ProjectsService - Gerencia CRUD Projects com RBAC ownerId
- * Integra Prisma PostgreSQL + Relations (User, Tasks)
- * Segurança: só ownerId = user.id acessa
- */
 @Injectable()
 export class ProjectsService {
-  /**
-   * Dependency Injection - PrismaService singleton
-   */
   constructor(private prisma: PrismaService) {}
 
   /**
-   * CRIAR Project Novo
-   * @param dto - name + description (CreateProjectDto)
-   * @param ownerId - user.id do JWT (RBAC auto)
-   * @returns Project criado + owner + tasks vazias
+   * CREATE Project
+   * Owner vem do JWT
    */
   async create(dto: CreateProjectDto, ownerId: number) {
     return this.prisma.project.create({
       data: {
-        ...dto,
-        owner: { connect: { id: ownerId } },  // ownerId via FK
+        name: dto.name,
+        description: dto.description,
+        owner: { connect: { id: ownerId } },
       },
       include: {
-        owner: true,   // User que criou
-        tasks: true,   // Tasks do project (kanban)
+        owner: true,
       },
     });
   }
 
   /**
-   * LISTAR MEUS Projects (RBAC)
-   * @param userId - JWT user.id
-   * @returns Array projects ownerId=userId ordenados updatedAt desc
+   * LIST Projects do usuário logado
+   * Retorna contagem de tasks (evita payload pesado)
    */
   async findAll(userId: number) {
     return this.prisma.project.findMany({
       where: {
-        ownerId: userId,  // Só projetos do usuário logado
+        ownerId: userId,
       },
       include: {
         owner: true,
-        tasks: true,
+        _count: {
+          select: { tasks: true },
+        },
       },
       orderBy: {
-        updatedAt: 'desc',  // Recentes primeiro
+        updatedAt: 'desc',
       },
     });
   }
 
   /**
-   * DETALHES 1 Project (RBAC + NotFound)
-   * @param id - Project ID
-   * @param userId - JWT user.id
-   * @returns Project completo OU NotFoundException
-   * @throws 404 se id não existe OU não é owner
+   * DETALHES de 1 Project
+   * 404 se não existe OU não pertence ao usuário
    */
   async findOne(id: number, userId: number) {
     const project = await this.prisma.project.findFirst({
       where: {
         id,
-        ownerId: userId,  // Dupla verificação segurança
+        ownerId: userId,
       },
       include: {
         owner: true,
-        tasks: true,  // Kanban preview
+        tasks: {
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
     if (!project) {
-      throw new NotFoundException(`Projeto ID ${id} não encontrado`);
+      throw new NotFoundException('Projeto não encontrado');
     }
 
     return project;
   }
 
   /**
-   * ATUALIZAR Project (RBAC)
-   * @param id - Project ID
-   * @param dto - name/description novos
-   * @param userId - JWT user.id
-   * @returns Project atualizado
-   * @throws 403 se não é owner
+   * UPDATE Project
+   * 404 se não existe OU não pertence
    */
   async update(id: number, dto: UpdateProjectDto, userId: number) {
-    // Verifica owner ANTES update
     const project = await this.prisma.project.findUnique({
       where: { id },
-      select: { ownerId: true },  // Leve, só ID
+      select: { ownerId: true },
     });
 
     if (!project || project.ownerId !== userId) {
-      throw new ForbiddenException('Projeto não autorizado');
+      throw new NotFoundException('Projeto não encontrado');
     }
 
     return this.prisma.project.update({
       where: { id },
-      data: dto,
+      data: {
+        ...(dto.name !== undefined && { name: dto.name }),
+        ...(dto.description !== undefined && {
+          description: dto.description,
+        }),
+      },
       include: {
         owner: true,
       },
@@ -113,22 +102,18 @@ export class ProjectsService {
   }
 
   /**
-   * DELETAR Project + Tasks Cascade (RBAC)
-   * @param id - Project ID
-   * @param userId - JWT user.id
-   * @returns Project deletado
-   * @throws 403 se não é owner
-   * @note Cascade deleta tasks automágico (schema onDelete)
+   * DELETE Project
+   * Cascade automático nas tasks (definido no schema)
+   * 404 se não existe OU não pertence
    */
   async remove(id: number, userId: number) {
-    // Verifica owner ANTES delete
     const project = await this.prisma.project.findUnique({
       where: { id },
       select: { ownerId: true },
     });
 
     if (!project || project.ownerId !== userId) {
-      throw new ForbiddenException('Projeto não autorizado');
+      throw new NotFoundException('Projeto não encontrado');
     }
 
     return this.prisma.project.delete({

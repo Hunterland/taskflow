@@ -28,7 +28,7 @@ export class TasksController {
   @Post()
   @ApiOperation({ summary: 'Cria task em projeto (owner only)' })
   create(@Body() createTaskDto: CreateTaskDto, @GetUser() user: UserDto) {
-    return this.tasksService.create({ ...createTaskDto, ownerId: user.id });
+    return this.tasksService.create(createTaskDto, user.id);
   }
 
   @Get()
@@ -59,7 +59,7 @@ export class TasksController {
   @ApiQuery({ name: 'status', enum: TaskStatus, required: false })
   @ApiOperation({ summary: 'Minhas tasks como assignee (filtros)' })
   findMyTasks(@GetUser() user: UserDto, @Query('status') status?: TaskStatus) {
-    return this.tasksService.findByAssignee(user.id, { status });
+    return this.tasksService.findByAssignee(user.id, user.id, { status });
   }
 
   @Get('project/:projectId')
