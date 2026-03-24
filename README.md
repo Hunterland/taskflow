@@ -1,6 +1,5 @@
 # TaskFlow - Painel de Gestão de Projetos e Tarefas
 
-[ [ [ [
 
 **TaskFlow** é um sistema fullstack didático para aprender arquitetura modular profissional com **NestJS + Angular + Prisma + PostgreSQL**. Um mini-Trello para freelancers gerenciarem projetos e tarefas com autenticação JWT e kanban simples.
 
