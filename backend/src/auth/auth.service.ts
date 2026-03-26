@@ -18,7 +18,8 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
-
+  
+  // register e login usando email e senha, com hash de senha e geração de token JWT
   async register(dto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -51,7 +52,8 @@ export class AuthService {
       accessToken: this.generateToken(user.id, user.email),
     };
   }
-
+  
+  // login usando email e senha, com verificação de hash de senha e geração de token JWT
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -79,7 +81,8 @@ export class AuthService {
       accessToken: this.generateToken(user.id, user.email),
     };
   }
-
+  
+  // função para gerar token JWT usando o id e email do usuário
   private generateToken(userId: number, email: string): string {
     const payload: JwtPayload = { sub: userId, email };
     return this.jwtService.sign(payload);
