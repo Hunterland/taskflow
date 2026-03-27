@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../core/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -16,7 +20,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
-  
+
   // register e login usando email e senha, com hash de senha e geração de token JWT
   async register(dto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
@@ -50,16 +54,16 @@ export class AuthService {
       accessToken: this.generateToken(user.id, user.email),
     };
   }
-  
+
   // login usando email e senha, com verificação de hash de senha e geração de token JWT
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
-      select: { 
-        id: true, 
-        email: true, 
-        name: true, 
-        passwordHash: true 
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        passwordHash: true,
       },
     });
 
@@ -67,7 +71,10 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
@@ -79,10 +86,36 @@ export class AuthService {
       accessToken: this.generateToken(user.id, user.email),
     };
   }
-  
+
   // função para gerar token JWT usando o id e email do usuário
   private generateToken(userId: number, email: string): string {
     const payload: JwtPayload = { sub: userId, email };
     return this.jwtService.sign(payload);
+  }
+
+  // função para refresh token, que verifica o refresh token e gera um novo access token
+  async refresh(oldRefreshToken: string) {
+    try {
+      // Verifica refresh token válido
+      const payload = this.jwtService.verify(oldRefreshToken);
+
+      // Busca user (igual JwtStrategy)
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { id: true, email: true, name: true, role: true },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('Token inválido');
+      }
+
+      // Gera NOVO access token (15min)
+      return {
+        accessToken: this.generateToken(user.id, user.email),
+        user,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token inválido');
+    }
   }
 }
