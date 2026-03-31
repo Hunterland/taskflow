@@ -1,108 +1,121 @@
-# TaskFlow - Painel de Gestão de Projetos e Tarefas
+# TaskFlow - Gerenciamento de Projetos e Tarefas
+
+**TaskFlow** é um sistema fullstack didático para aprender **arquitetura modular NestJS** com **JWT Auth + Prisma + PostgreSQL**. Um mini-Trello para freelancers gerenciarem projetos e tarefas com RBAC, kanban e API documentada com Swagger.
 
 
-**TaskFlow** é um sistema fullstack didático para aprender arquitetura modular profissional com **NestJS + Angular + Prisma + PostgreSQL**. Um mini-Trello para freelancers gerenciarem projetos e tarefas com autenticação JWT e kanban simples.
+## 🎯 Status Atual (Março 2026)
 
-## 🎯 Visão do Produto
+**✅ Backend MVP Completo** | **🔄 Frontend em Planejamento**
+```
+✅ Modularidade 100% (auth/users/projects/tasks/core)
+✅ JWT Auth (register/login/refresh + guards)
+✅ DTOs + Validation Pipes
+✅ Exception Filter Global
+✅ Swagger OpenAPI Documentada
+✅ Prisma Schema + Migrations Pendentes
+🔄 Rate Limiting + Jest Tests Pendentes
+```
 
-Um painel web para **freelancers e pequenas equipes** organizarem projetos e tarefas diárias, com:
-- Autenticação segura (JWT)
-- Múltiplos projetos por usuário
-- Kanban simples por projeto (Todo → In Progress → Done)
-- Design responsivo com Tailwind CSS
+**API Swagger:** http://localhost:3000/api (após `npm run start:dev`)
 
-**Casos de uso principais:**
-1. Registrar/login na plataforma
-2. Criar projetos para clientes
-3. Adicionar tarefas com status e responsáveis
-4. Visualizar quadro kanban por projeto
-
-## 🏗️ Arquitetura & Tecnologias
+## 🏗️ Stack Técnica
 
 ```
-Frontend: Angular 19 + Tailwind CSS + Standalone Components
-Backend:  NestJS 11 + Prisma ORM + JWT Auth
+Backend:  NestJS 11 + Prisma ORM + JWT + Swagger
 Database: PostgreSQL 18.2.1
-DevOps:  Docker (opcional) + Git
+Frontend: Angular 19 + Tailwind CSS (planejado)
+DevOps:   Docker + Git + Postman/Swagger
 ```
 
-### Estrutura Modular
-```
-backend/     # NestJS (auth, users, projects, tasks, core)
-frontend/    # Angular (core, shared, auth, dashboard, projects, tasks)
-prisma/      # Schema + migrations
-```
-
-## 🚀 Instalação Rápida
+## 🚀 Instalação & Execução
 
 ### Pré-requisitos
 ```bash
-Node.js 20+ | PostgreSQL 18+ | Angular CLI | Nest CLI | Git
+Node.js 20+ | PostgreSQL 18+ | Nest CLI | Angular CLI | Git
 ```
 
-### 1. Clonar e instalar
+### 1. Clone e Instale
 ```bash
-git clone <repo>
+git clone https://github.com/Hunterland/taskflow.git
 cd taskflow
+git checkout master  # Default branch
 
 # Backend
 cd backend
 npm install
 
-# Frontend  
+# Frontend (futuro)
 cd ../frontend
 npm install
 ```
 
-### 2. Configurar banco
+### 2. Configurar Banco
 ```bash
-# PostgreSQL local (porta 5432)
-psql -U postgres -c "CREATE DATABASE taskflow;"
+# PostgreSQL (porta 5432)
+psql -U postgres -c "CREATE DATABASE taskflow_dev;"
 
 # Backend
 cd backend
 cp .env.example .env
-# Editar .env → DATABASE_URL com sua senha PostgreSQL
-npx prisma migrate dev --name init
+# Edite .env → DATABASE_URL="postgresql://user:senha@localhost:5432/taskflow_dev"
+npx prisma migrate dev --name init-taskflow
 npx prisma generate
 ```
 
-### 3. Rodar projeto
+### 3. Rodar
 ```bash
-# Terminal 1: Backend
+# Backend + Swagger
 cd backend
-npm run start:dev           # http://localhost:3000
+npm run start:dev  # http://localhost:3000 | Swagger: /api
 
-# Terminal 2: Frontend  
-cd frontend
-ng serve                    # http://localhost:4200
+# Testes API (Postman/Swagger)
+POST /auth/register  # {name:"Test",email:"test@test.com",password:"123456"}
+POST /auth/login     # Retorna JWT tokens
+GET /projects        # Authorization: Bearer <token>
 ```
 
-## 📁 Estrutura de Pastas
+## 📁 Estrutura Backend (NestJS Modular)
 
-### Backend (NestJS Modular)
 ```
 src/
-├── auth/          # Login, register, JWT
-├── users/         # CRUD usuários
-├── projects/      # Projetos + owner
-├── tasks/         # Tarefas + kanban
-├── core/          # PrismaService, guards
-└── shared/        # DTOs, decorators
+├── auth/           # JWT Login/register/refresh
+├── users/          # CRUD users + RBAC (ADMIN)
+├── projects/       # CRUD projects (owner-only)
+├── tasks/          # CRUD tasks + kanban filters
+├── core/prisma/    # PrismaService
+├── common/filters/ # HttpExceptionFilter global
+└── shared/dto/     # DTOs + Pipes
 ```
 
-### Frontend (Angular Standalone)
-```
-src/app/
-├── core/          # AuthService, interceptors
-├── shared/        # Header, sidebar, buttons
-├── auth/          # Login/register pages
-├── dashboard/     # Home pós-login
-├── projects/      # Lista + formulários
-└── tasks/         # Kanban com drag/drop
-```
+## 🔑 Autenticação JWT
 
-## 🗄️ Modelo de Dados (Prisma)
+**Fluxo completo:**
+1. `POST /auth/register` → User + tokens
+2. `POST /auth/login` → AccessToken (15min) + RefreshToken (7d)
+3. `Authorization: Bearer <accessToken>` em rotas protegidas
+4. `POST /auth/refresh` → Novo accessToken
+
+**Guards aplicados:**
+- `JwtAuthGuard` → Todas rotas `/users/projects/tasks`
+- `RolesGuard + @Roles('ADMIN')` → `GET /users` e `PATCH /users/:id`
+
+## 📋 API Endpoints (Swagger: /api)
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| POST | `/auth/register` | Criar conta | - |
+| POST | `/auth/login` | Login JWT | - |
+| POST | `/auth/refresh` | Renovar token | - |
+| GET | `/users/me` | Dados usuário logado | ✅ |
+| GET | `/users` | Todos usuários (ADMIN) | ✅ |
+| GET | `/projects` | Meus projetos | ✅ |
+| POST | `/projects` | Criar projeto | ✅ |
+| GET | `/projects/:id` | Detalhes projeto | ✅ |
+| GET | `/tasks` | Minhas tasks | ✅ |
+| GET | `/tasks/my-tasks?status=TODO` | Tasks atribuídas | ✅ |
+| GET | `/tasks/project/:projectId` | Kanban por projeto | ✅ |
+
+## 🗄️ Schema Prisma (Atual)
 
 ```prisma
 model User {
@@ -110,23 +123,22 @@ model User {
   email     String   @unique
   name      String
   role      UserRole @default(USER)
-  
-  projects  Project[] # Projetos como owner
-  tasks     Task[]    # Tarefas como assignee
+  projects  Project[]
+  tasks     Task[]
 }
 
 model Project {
-  id          Int      @id @default(autoincrement())
-  name        String
-  ownerId     Int
-  owner       User     @relation(fields: [ownerId], references: [id])
-  tasks       Task[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+  tasks     Task[]
 }
 
 model Task {
   id          Int         @id @default(autoincrement())
   title       String
-  status      TaskStatus  @default(TODO) # TODO | IN_PROGRESS | DONE
+  status      TaskStatus  @default(TODO)
   projectId   Int
   project     Project     @relation(fields: [projectId], references: [id])
   assigneeId  Int?
@@ -134,62 +146,44 @@ model Task {
 }
 ```
 
-## 📋 API Endpoints
-
-| Método | Endpoint                        | Descrição              | Auth |
-|--------|---------------------------------|------------------------|------|
-| POST   | `/auth/register`                | Criar conta            | -    |
-| POST   | `/auth/login`                   | Login + JWT            | -    |
-| GET    | `/projects`                     | Meus projetos          | ✅   |
-| POST   | `/projects`                     | Criar projeto          | ✅   |
-| POST   | `/projects/:id/tasks`           | Criar tarefa           | ✅   |
-| PATCH  | `/projects/:id/tasks/:id`       | Atualizar tarefa/status| ✅   |
-
-## 🛠️ Scripts Úteis
+## 🛠️ Scripts de Desenvolvimento
 
 ```bash
-# Desenvolvimento
-npm run start:dev    # Backend dev + hot reload
-ng serve             # Frontend dev
+# Backend
+npm run start:dev    # Dev + hot reload + Swagger
+npm run start:prod   # Produção
+npx prisma studio    # Banco GUI
+npx prisma migrate dev --name nome_da_migracao
+npm run test:cov     # Jest coverage (futuro)
 
-# Banco
-npx prisma migrate dev     # Nova migração
-npx prisma studio          # Interface gráfica
-npx prisma db push         # Sync rápido (dev)
-
-# Build produção
-npm run build             # Backend
-ng build                  # Frontend
-npm run start:prod        # Backend produção
+# Frontend (futuro)
+ng serve             # http://localhost:4200
+ng build             # Produção
 ```
 
-## 📊 Kanban de Desenvolvimento
+## 📊 Checklist Backend
 
-| Backlog | Em Progresso | Concluído |
-|---------|--------------|-----------|
-| Tasks module | Auth module | ✅ Setup<br>✅ Banco<br>✅ Backend base |
+| Item | Status | Comando |
+|------|--------|---------|
+| Modularidade | ✅ 100% | - |
+| JWT Auth | ✅ Completo | /auth/register/login/refresh |
+| DTOs + Pipes | ✅ 100% | ValidationPipe global |
+| Exception Filter | ✅ Testado | JSON padronizado 404/500 |
+| Swagger | ✅ Completo | /api com @ApiTags/@ApiOperation |
+| Rate Limiting | 🔄 Pendente | `@nestjs/throttler` |
+| Jest Tests | 🔄 Pendente | `npm run test:cov` |
+| Prisma Migrations | ❓ Verificar | `npx prisma migrate dev` |
 
-**Próximo:** JWT Auth → Users → Projects → Tasks → Frontend
+## 🤝 Contribuir
 
-## 🤝 Contribuição
-
-1. Fork o projeto
-2. Crie branch `feat/nome-da-feature`
-3. Commit com mensagens claras
-4. Pull Request para `main`
+1. `git checkout -b feat/nova-feature`
+2. Commit claro: `feat: adicionar rate limiting`
+3. Teste: `npm run start:dev` + Swagger
+4. PR para `master`
 
 ## 📄 Licença
-
-MIT License - Veja [LICENSE](LICENSE)
+MIT - Veja [LICENSE](LICENSE)
 
 ## 👨‍💻 Autor
-
-**Alan Barroncas** - Fullstack Developer  
-💃 Artista/B-boy | Manaus, AM | [GitHub](https://github.com/alanbarroncas)
-
-***
-
-<div align="center">
-  <br/>
-  <small>Feito com ❤️ para aprender arquitetura fullstack moderna</small>
-</div>
+**Alan Barroncas** - Fullstack Dev  
+Manaus, AM | [GitHub](https://github.com/Hunterland) | [LinkedIn](https://linkedin.com/in/alanbarroncas)
