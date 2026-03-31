@@ -8,79 +8,69 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-
-/**
- * Services e DTOs
- */
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-
-/**
- * Auth - JWT + RBAC
- */
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { UserDto } from '../auth/dto/user-dto';
 
-@ApiTags('Projects')  // Swagger grouping
+@ApiTags('projects')
+@ApiBearerAuth('JWT')
 @Controller('projects')
-@UseGuards(JwtAuthGuard)  // Protege TODAS rotas (RBAC ownerId)
-@ApiBearerAuth('JWT')  // Swagger auth button
+@UseGuards(JwtAuthGuard)
 export class ProjectsController {
-  /**
-   * Dependency Injection - ProjectsService com Prisma
-   */
   constructor(private readonly projectsService: ProjectsService) {}
-
-  /**
-   * Cria project NOVO
-   * @param dto name + description
-   * @param user JWT user.id → ownerId auto
-   * @returns Project com owner/tasks include
-   */
+  
+  // endpoints para criar, listar, obter detalhes, atualizar e remover projetos do usuário autenticado,
+  //  protegidos por guardas de autenticação e autorização (apenas o owner do projeto pode acessar)
   @Post()
-  @ApiOperation({ summary: 'Cria project (owner = user logado)' })
-  @ApiResponse({ status: 201, description: 'Project criado' })
+  @ApiOperation({ summary: 'Criar projeto do usuário autenticado' })
+  @ApiCreatedResponse({ description: 'Projeto criado com sucesso' })
+  @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
   create(@Body() dto: CreateProjectDto, @GetUser() user: UserDto) {
     return this.projectsService.create(dto, user.id);
   }
-
-  /**
-   * Lista TODOS projects do USER logado
-   * @param user JWT → where ownerId = user.id
-   * @returns Array projects com owner/tasks
-   */
+  
+  // endpoint para listar os projetos do usuário autenticado, protegido por guarda de autenticação (token JWT)
   @Get()
-  @ApiOperation({ summary: 'Lista MEUS projects (RBAC ownerId)' })
-  @ApiResponse({ status: 200, description: 'Lista vazia [] OK' })
+  @ApiOperation({ summary: 'Listar projetos do usuário autenticado' })
+  @ApiOkResponse({ description: 'Projetos retornados com sucesso' })
+  @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
   findAll(@GetUser() user: UserDto) {
     return this.projectsService.findAll(user.id);
   }
-
-  /**
-   * Detalhes 1 project (verifica owner)
-   * @param id Project ID
-   * @param user JWT → where id AND ownerId=user.id
-   * @returns Project details ou 401 Forbidden
-   */
+  
+  // endpoint para obter detalhes de um projeto do usuário autenticado por ID,
+  //  protegido por guarda de autenticação (token JWT)
   @Get(':id')
-  @ApiOperation({ summary: 'Detalhes project (só owner)' })
-  @ApiResponse({ status: 200, description: 'Project details' })
-  @ApiResponse({ status: 401, description: 'Não é seu project' })
+  @ApiOperation({ summary: 'Obter detalhes de um projeto do owner' })
+  @ApiOkResponse({ description: 'Projeto encontrado com sucesso' })
+  @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
+  @ApiForbiddenResponse({ description: 'Você não tem acesso a este projeto' })
+  @ApiNotFoundResponse({ description: 'Projeto não encontrado' })
   findOne(@Param('id') id: string, @GetUser() user: UserDto) {
     return this.projectsService.findOne(+id, user.id);
   }
 
-  /**
-   * Atualiza project (só owner)
-   * @param id Project ID
-   * @param dto name/description
-   * @param user JWT → verifica ownerId
-   */
+  // endpoint para atualizar um projeto do usuário autenticado por ID,
+  //  protegido por guarda de autenticação (token JWT)
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualiza project (só owner)' })
+  @ApiOperation({ summary: 'Atualizar projeto do owner' })
+  @ApiOkResponse({ description: 'Projeto atualizado com sucesso' })
+  @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
+  @ApiForbiddenResponse({ description: 'Você não tem acesso a este projeto' })
+  @ApiNotFoundResponse({ description: 'Projeto não encontrado' })
   update(
     @Param('id') id: string,
     @Body() dto: UpdateProjectDto,
@@ -88,15 +78,15 @@ export class ProjectsController {
   ) {
     return this.projectsService.update(+id, dto, user.id);
   }
-
-  /**
-   * Deleta project (só owner)
-   * @param id Project ID + cascade tasks
-   * @param user JWT → verifica ownerId
-   */
+  
+  // endpoint para remover um projeto do usuário autenticado por ID,
+  // protegido por guarda de autenticação (token JWT)
   @Delete(':id')
-  @ApiOperation({ summary: 'Deleta project + tasks (só owner)' })
-  @ApiResponse({ status: 200, description: 'Project deletado' })
+  @ApiOperation({ summary: 'Remover projeto e suas tasks' })
+  @ApiOkResponse({ description: 'Projeto removido com sucesso' })
+  @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
+  @ApiForbiddenResponse({ description: 'Você não tem acesso a este projeto' })
+  @ApiNotFoundResponse({ description: 'Projeto não encontrado' })
   remove(@Param('id') id: string, @GetUser() user: UserDto) {
     return this.projectsService.remove(+id, user.id);
   }
