@@ -1,31 +1,44 @@
 # TaskFlow - Gerenciamento de Projetos e Tarefas
 
-**TaskFlow** é um sistema fullstack didático para aprender **arquitetura modular NestJS** com **JWT Auth + Prisma + PostgreSQL**. Um mini-Trello para freelancers gerenciarem projetos e tarefas com RBAC, kanban e API documentada com Swagger.
+**TaskFlow** é um sistema fullstack didático para estudar **arquitetura modular com NestJS** no backend e **Angular** no frontend. A proposta é simular um mini-Trello para freelancers gerenciarem projetos e tarefas com autenticação JWT, RBAC, organização modular, dashboard autenticado e API documentada com Swagger. [cite:2][cite:452]
 
+## 🎯 Status Atual (Abril 2026)
 
-## 🎯 Status Atual (Março 2026)
-
-**✅ Backend MVP Completo** | **🔄 Frontend em Planejamento**
-```
-✅ Modularidade 100% (auth/users/projects/tasks/core)
+**✅ Backend MVP funcional** | **✅ Frontend iniciado e autenticado**
+```txt
+Backend
+✅ Modularidade por domínio (auth/users/projects/tasks/core)
 ✅ JWT Auth (register/login/refresh + guards)
 ✅ DTOs + Validation Pipes
 ✅ Exception Filter Global
-✅ Swagger OpenAPI Documentada
-✅ Prisma Schema + Migrations Pendentes
-🔄 Rate Limiting + Jest Tests Pendentes
-```
+✅ Swagger/OpenAPI
+🔄 Rate Limiting pendente
+🔄 Testes automatizados pendentes
+🔄 Prisma Migrations pendentes de revisão
 
-**API Swagger:** http://localhost:3000/api (após `npm run start:dev`)
+Frontend
+✅ Angular configurado e rodando
+✅ Tela de login funcional
+✅ Integração com backend de autenticação
+✅ Redirecionamento após login para /dashboard
+✅ Toast customizado com ngx-toastr
+✅ NotificationService para padronizar alertas
+🔄 Dashboard em evolução
+🔄 Módulos de projetos e tarefas em construção
+```
+[cite:2][cite:452][cite:585]
+
+**Swagger da API:** `http://localhost:3000/api` após subir o backend. [cite:2]
 
 ## 🏗️ Stack Técnica
 
-```
+```txt
 Backend:  NestJS 11 + Prisma ORM + JWT + Swagger
-Database: PostgreSQL 18.2.1
-Frontend: Angular 19 + Tailwind CSS (planejado)
-DevOps:   Docker + Git + Postman/Swagger
+Database: PostgreSQL 18
+Frontend: Angular 21 + Tailwind CSS + ngx-toastr
+DevOps:   Git + Docker + Postman/Swagger
 ```
+[web:594][web:596][web:598]
 
 ## 🚀 Instalação & Execução
 
@@ -33,89 +46,121 @@ DevOps:   Docker + Git + Postman/Swagger
 ```bash
 Node.js 20+ | PostgreSQL 18+ | Nest CLI | Angular CLI | Git
 ```
+[web:596][web:600]
 
-### 1. Clone e Instale
+### 1. Clone e instale
 ```bash
 git clone https://github.com/Hunterland/taskflow.git
 cd taskflow
-git checkout master  # Default branch
+git checkout master
 
 # Backend
 cd backend
 npm install
 
-# Frontend (futuro)
+# Frontend
 cd ../frontend
 npm install
 ```
+[cite:583][cite:584]
 
-### 2. Configurar Banco
+### 2. Configurar banco
 ```bash
-# PostgreSQL (porta 5432)
+# PostgreSQL
 psql -U postgres -c "CREATE DATABASE taskflow_dev;"
 
 # Backend
 cd backend
 cp .env.example .env
-# Edite .env → DATABASE_URL="postgresql://user:senha@localhost:5432/taskflow_dev"
-npx prisma migrate dev --name init-taskflow
-npx prisma generate
 ```
 
-### 3. Rodar
+Depois edite o `.env` com sua conexão PostgreSQL, por exemplo:
+
+```env
+DATABASE_URL="postgresql://postgres:sua_senha@localhost:5432/taskflow_dev"
+JWT_SECRET="sua_chave_jwt"
+JWT_REFRESH_SECRET="sua_chave_refresh"
+```
+
+As migrations Prisma ainda devem ser revisadas e executadas conforme o estado atual do projeto. [cite:2]
+
+### 3. Rodar o projeto
 ```bash
-# Backend + Swagger
+# Backend
 cd backend
-npm run start:dev  # http://localhost:3000 | Swagger: /api
-
-# Testes API (Postman/Swagger)
-POST /auth/register  # {name:"Test",email:"test@test.com",password:"123456"}
-POST /auth/login     # Retorna JWT tokens
-GET /projects        # Authorization: Bearer <token>
+npm run start:dev
 ```
 
-## 📁 Estrutura Backend (NestJS Modular)
+Backend disponível em:
+- API: `http://localhost:3000`
+- Swagger: `http://localhost:3000/api` [cite:2]
 
+```bash
+# Frontend
+cd frontend
+ng serve
 ```
+
+Frontend disponível em:
+- App: `http://localhost:4200` [cite:452]
+
+## 📁 Estrutura do Projeto
+
+### Backend
+```txt
 src/
-├── auth/           # JWT Login/register/refresh
-├── users/          # CRUD users + RBAC (ADMIN)
-├── projects/       # CRUD projects (owner-only)
-├── tasks/          # CRUD tasks + kanban filters
+├── auth/           # JWT login/register/refresh
+├── users/          # Usuários + RBAC
+├── projects/       # CRUD de projetos
+├── tasks/          # CRUD de tarefas + filtros
 ├── core/prisma/    # PrismaService
 ├── common/filters/ # HttpExceptionFilter global
-└── shared/dto/     # DTOs + Pipes
+└── shared/dto/     # DTOs + validação
 ```
+[cite:2][cite:585]
 
-## 🔑 Autenticação JWT
+### Frontend
+```txt
+src/app/
+├── core/
+│   ├── services/       # auth.service, notification.service
+│   └── interceptors/   # auth.interceptor
+├── features/
+│   └── auth/           # login
+├── dashboard/          # tela autenticada inicial
+└── app.config.ts       # providers globais
+```
+[cite:452]
 
-**Fluxo completo:**
-1. `POST /auth/register` → User + tokens
-2. `POST /auth/login` → AccessToken (15min) + RefreshToken (7d)
-3. `Authorization: Bearer <accessToken>` em rotas protegidas
-4. `POST /auth/refresh` → Novo accessToken
+## 🔐 Autenticação JWT
 
-**Guards aplicados:**
-- `JwtAuthGuard` → Todas rotas `/users/projects/tasks`
-- `RolesGuard + @Roles('ADMIN')` → `GET /users` e `PATCH /users/:id`
+Fluxo atual de autenticação:
+1. `POST /auth/register` cria usuário e retorna tokens.
+2. `POST /auth/login` autentica e retorna access token e refresh token.
+3. Rotas protegidas usam `Authorization: Bearer <token>`.
+4. `POST /auth/refresh` emite novo access token. [cite:587][cite:2]
 
-## 📋 API Endpoints (Swagger: /api)
+No frontend, o login já está integrado e funcionando com redirecionamento para `/dashboard` após autenticação bem-sucedida. [cite:452]
+
+## 📋 Endpoints principais
 
 | Método | Endpoint | Descrição | Auth |
-|--------|----------|-----------|------|
+|---|---|---|---|
 | POST | `/auth/register` | Criar conta | - |
 | POST | `/auth/login` | Login JWT | - |
 | POST | `/auth/refresh` | Renovar token | - |
-| GET | `/users/me` | Dados usuário logado | ✅ |
-| GET | `/users` | Todos usuários (ADMIN) | ✅ |
-| GET | `/projects` | Meus projetos | ✅ |
+| GET | `/users/me` | Dados do usuário autenticado | ✅ |
+| GET | `/users` | Listar usuários (ADMIN) | ✅ |
+| GET | `/projects` | Listar meus projetos | ✅ |
 | POST | `/projects` | Criar projeto | ✅ |
-| GET | `/projects/:id` | Detalhes projeto | ✅ |
-| GET | `/tasks` | Minhas tasks | ✅ |
-| GET | `/tasks/my-tasks?status=TODO` | Tasks atribuídas | ✅ |
-| GET | `/tasks/project/:projectId` | Kanban por projeto | ✅ |
+| GET | `/projects/:id` | Detalhes do projeto | ✅ |
+| GET | `/tasks` | Listar tarefas | ✅ |
+| GET | `/tasks/my-tasks?status=TODO` | Tarefas atribuídas | ✅ |
+| GET | `/tasks/project/:projectId` | Tarefas por projeto | ✅ |
 
-## 🗄️ Schema Prisma (Atual)
+Os endpoints acima já fazem parte da estrutura atual documentada do backend MVP. [cite:2]
+
+## 🗄️ Schema Prisma
 
 ```prisma
 model User {
@@ -146,44 +191,80 @@ model Task {
 }
 ```
 
-## 🛠️ Scripts de Desenvolvimento
+Esse schema representa a base atual do domínio de usuários, projetos e tarefas usada no MVP. [cite:2]
 
+## 🖥️ Progresso do Frontend
+
+O frontend já saiu do estágio de planejamento inicial e agora possui:
+- tela de login integrada ao backend;
+- autenticação funcional;
+- redirecionamento para dashboard após login;
+- feedback visual com toast customizado;
+- serviço central de notificação para padronizar alertas da aplicação. [cite:452]
+
+Exemplo de credencial usada em testes locais:
+- Email: `test2@taskflow.com`
+- Senha: `123456` [cite:452]
+
+## 🛠️ Scripts úteis
+
+### Backend
 ```bash
-# Backend
-npm run start:dev    # Dev + hot reload + Swagger
-npm run start:prod   # Produção
-npx prisma studio    # Banco GUI
+npm run start:dev
+npm run start:prod
+npx prisma studio
 npx prisma migrate dev --name nome_da_migracao
-npm run test:cov     # Jest coverage (futuro)
-
-# Frontend (futuro)
-ng serve             # http://localhost:4200
-ng build             # Produção
+npm run test:cov
 ```
 
-## 📊 Checklist Backend
+### Frontend
+```bash
+ng serve
+ng build
+npm test
+```
 
-| Item | Status | Comando |
-|------|--------|---------|
-| Modularidade | ✅ 100% | - |
-| JWT Auth | ✅ Completo | /auth/register/login/refresh |
-| DTOs + Pipes | ✅ 100% | ValidationPipe global |
-| Exception Filter | ✅ Testado | JSON padronizado 404/500 |
-| Swagger | ✅ Completo | /api com @ApiTags/@ApiOperation |
-| Rate Limiting | 🔄 Pendente | `@nestjs/throttler` |
-| Jest Tests | 🔄 Pendente | `npm run test:cov` |
-| Prisma Migrations | ❓ Verificar | `npx prisma migrate dev` |
+## 📊 Checklist atual
 
-## 🤝 Contribuir
+| Item | Status |
+|---|---|
+| Backend modular | ✅ |
+| JWT Auth | ✅ |
+| Swagger | ✅ |
+| Exception Filter global | ✅ |
+| Frontend Angular iniciado | ✅ |
+| Login integrado | ✅ |
+| Dashboard autenticado | ✅ |
+| Toast customizado | ✅ |
+| NotificationService | ✅ |
+| Rate limiting | 🔄 |
+| Testes automatizados | 🔄 |
+| Revisão de migrations Prisma | 🔄 |
 
-1. `git checkout -b feat/nova-feature`
-2. Commit claro: `feat: adicionar rate limiting`
-3. Teste: `npm run start:dev` + Swagger
-4. PR para `master`
+O backend segue funcional para MVP, enquanto o frontend já começou a consolidar a camada de autenticação e feedback visual. [cite:2][cite:452]
+
+## 🤝 Contribuição
+
+1. Crie uma branch:
+```bash
+git checkout -b feat/nova-feature
+```
+
+2. Faça commits descritivos:
+```bash
+feat: adicionar dashboard autenticado
+fix: ajustar toast de login
+```
+
+3. Teste localmente backend e frontend antes de abrir PR para `master`. [cite:584]
 
 ## 📄 Licença
-MIT - Veja [LICENSE](LICENSE)
+MIT - veja o arquivo [LICENSE](LICENSE)
 
 ## 👨‍💻 Autor
-**Alan Barroncas** - Fullstack Dev  
-Manaus, AM | [GitHub](https://github.com/Hunterland) | [LinkedIn](https://linkedin.com/in/alanbarroncas)
+
+**Alan Barroncas**  
+Fullstack Developer  
+Manaus - AM  
+GitHub: https://github.com/Hunterland  
+LinkedIn: https://linkedin.com/in/alanbarroncas
