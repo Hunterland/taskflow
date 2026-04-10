@@ -1,3 +1,86 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
 
-@import 'tailwindcss';
+.custom-toast {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 14px !important;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.16) !important;
+  min-height: 72px;
+  max-width: 420px;
+  width: 420px;
+  padding: 18px 18px 16px 18px !important;
+  margin-bottom: 12px !important;
+  background-image: none !important;
+}
+
+.custom-toast.toast-success {
+  border-left: 5px solid #10b981 !important;
+  background-image: none !important;
+}
+
+.custom-toast.toast-error {
+  border-left: 5px solid #ef4444 !important;
+  background-image: none !important;
+}
+
+.custom-toast .toast-title {
+  color: #111827 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px !important;
+}
+
+.custom-toast .toast-message {
+  color: #374151 !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+  margin: 0 !important;
+}
+
+.custom-toast .toast-close-button {
+  color: #6b7280 !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  right: 6px !important;
+  top: 6px !important;
+}
+
+.custom-toast .toast-close-button:hover {
+  color: #111827 !important;
+}
+
+.custom-toast .toast-progress {
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: rgba(16, 185, 129, 0.9) !important;
+}
+
+.custom-toast.toast-error .toast-progress {
+  background: rgba(239, 68, 68, 0.9) !important;
+}
+
+.toast-top-right {
+  top: 16px !important;
+  right: 16px !important;
+}
+
+#toast-container > div {
+  opacity: 1 !important;
+}
+
+@media (max-width: 640px) {
+  .toast-top-right {
+    top: 12px !important;
+    right: 12px !important;
+    left: 12px !important;
+  }
+
+  .custom-toast {
+    width: auto;
+    max-width: none;
+  }
+}
