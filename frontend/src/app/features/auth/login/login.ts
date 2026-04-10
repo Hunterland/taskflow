@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';  // ← IMPORTAÇÃO FALTANTE
 import { AuthService } from '../../../core/services/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +16,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private toastr = inject(ToastrService);  // ← FUNCIONA COM O IMPORT
+  private notification = inject(NotificationService);
 
   isLoading = false;
   errorMessage = '';
@@ -44,7 +44,7 @@ export class LoginComponent {
       next: (response) => {
         this.isLoading = false;
 
-        this.toastr.success('Login realizado com sucesso!', 'Sucesso ✅');
+        this.notification.success('Login realizado com sucesso!');
         console.log('✅ Login realizado com sucesso!', response);
 
         this.router.navigate(['/dashboard']);
@@ -53,8 +53,9 @@ export class LoginComponent {
         this.isLoading = false;
 
         const msg = error?.error?.message || 'Email ou senha inválidos.';
-        this.toastr.error(msg, 'Erro no login ❌');
+        this.notification.error(msg, 'Erro no login');
         console.error('❌ Falha no login:', error);
+
         this.errorMessage = msg;
       },
     });
