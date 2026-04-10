@@ -1,6 +1,6 @@
 # TaskFlow - Gerenciamento de Projetos e Tarefas
 
-**TaskFlow** é um sistema fullstack didático para estudar **arquitetura modular com NestJS** no backend e **Angular** no frontend. A proposta é simular um mini-Trello para freelancers gerenciarem projetos e tarefas com autenticação JWT, RBAC, organização modular, dashboard autenticado e API documentada com Swagger. [cite:2][cite:452]
+**TaskFlow** é um sistema fullstack didático para estudar **arquitetura modular com NestJS** no backend e **Angular** no frontend. A proposta é simular um mini-Trello para freelancers gerenciarem projetos e tarefas com autenticação JWT, RBAC, organização modular, dashboard autenticado e API documentada com Swagger.
 
 ## 🎯 Status Atual (Abril 2026)
 
@@ -26,9 +26,8 @@ Frontend
 🔄 Dashboard em evolução
 🔄 Módulos de projetos e tarefas em construção
 ```
-[cite:2][cite:452][cite:585]
 
-**Swagger da API:** `http://localhost:3000/api` após subir o backend. [cite:2]
+**Swagger da API:** `http://localhost:3000/api` após subir o backend.
 
 ## 🏗️ Stack Técnica
 
@@ -38,7 +37,6 @@ Database: PostgreSQL 18
 Frontend: Angular 21 + Tailwind CSS + ngx-toastr
 DevOps:   Git + Docker + Postman/Swagger
 ```
-[web:594][web:596][web:598]
 
 ## 🚀 Instalação & Execução
 
@@ -46,7 +44,6 @@ DevOps:   Git + Docker + Postman/Swagger
 ```bash
 Node.js 20+ | PostgreSQL 18+ | Nest CLI | Angular CLI | Git
 ```
-[web:596][web:600]
 
 ### 1. Clone e instale
 ```bash
@@ -62,7 +59,6 @@ npm install
 cd ../frontend
 npm install
 ```
-[cite:583][cite:584]
 
 ### 2. Configurar banco
 ```bash
@@ -82,7 +78,7 @@ JWT_SECRET="sua_chave_jwt"
 JWT_REFRESH_SECRET="sua_chave_refresh"
 ```
 
-As migrations Prisma ainda devem ser revisadas e executadas conforme o estado atual do projeto. [cite:2]
+As migrations Prisma ainda devem ser revisadas e executadas conforme o estado atual do projeto.
 
 ### 3. Rodar o projeto
 ```bash
@@ -93,7 +89,7 @@ npm run start:dev
 
 Backend disponível em:
 - API: `http://localhost:3000`
-- Swagger: `http://localhost:3000/api` [cite:2]
+- Swagger: `http://localhost:3000/api`
 
 ```bash
 # Frontend
@@ -102,7 +98,7 @@ ng serve
 ```
 
 Frontend disponível em:
-- App: `http://localhost:4200` [cite:452]
+- App: `http://localhost:4200`
 
 ## 📁 Estrutura do Projeto
 
@@ -117,7 +113,6 @@ src/
 ├── common/filters/ # HttpExceptionFilter global
 └── shared/dto/     # DTOs + validação
 ```
-[cite:2][cite:585]
 
 ### Frontend
 ```txt
@@ -130,7 +125,6 @@ src/app/
 ├── dashboard/          # tela autenticada inicial
 └── app.config.ts       # providers globais
 ```
-[cite:452]
 
 ## 🔐 Autenticação JWT
 
@@ -138,9 +132,9 @@ Fluxo atual de autenticação:
 1. `POST /auth/register` cria usuário e retorna tokens.
 2. `POST /auth/login` autentica e retorna access token e refresh token.
 3. Rotas protegidas usam `Authorization: Bearer <token>`.
-4. `POST /auth/refresh` emite novo access token. [cite:587][cite:2]
+4. `POST /auth/refresh` emite novo access token.
 
-No frontend, o login já está integrado e funcionando com redirecionamento para `/dashboard` após autenticação bem-sucedida. [cite:452]
+No frontend, o login já está integrado e funcionando com redirecionamento para `/dashboard` após autenticação bem-sucedida.
 
 ## 📋 Endpoints principais
 
@@ -158,7 +152,7 @@ No frontend, o login já está integrado e funcionando com redirecionamento para
 | GET | `/tasks/my-tasks?status=TODO` | Tarefas atribuídas | ✅ |
 | GET | `/tasks/project/:projectId` | Tarefas por projeto | ✅ |
 
-Os endpoints acima já fazem parte da estrutura atual documentada do backend MVP. [cite:2]
+Os endpoints acima já fazem parte da estrutura atual documentada do backend MVP.
 
 ## 🗄️ Schema Prisma
 
@@ -191,7 +185,7 @@ model Task {
 }
 ```
 
-Esse schema representa a base atual do domínio de usuários, projetos e tarefas usada no MVP. [cite:2]
+Esse schema representa a base atual do domínio de usuários, projetos e tarefas usada no MVP.
 
 ## 🖥️ Progresso do Frontend
 
@@ -200,11 +194,11 @@ O frontend já saiu do estágio de planejamento inicial e agora possui:
 - autenticação funcional;
 - redirecionamento para dashboard após login;
 - feedback visual com toast customizado;
-- serviço central de notificação para padronizar alertas da aplicação. [cite:452]
+- serviço central de notificação para padronizar alertas da aplicação.
 
 Exemplo de credencial usada em testes locais:
 - Email: `test2@taskflow.com`
-- Senha: `123456` [cite:452]
+- Senha: `123456`
 
 ## 🛠️ Scripts úteis
 
@@ -241,7 +235,7 @@ npm test
 | Testes automatizados | 🔄 |
 | Revisão de migrations Prisma | 🔄 |
 
-O backend segue funcional para MVP, enquanto o frontend já começou a consolidar a camada de autenticação e feedback visual. [cite:2][cite:452]
+O backend segue funcional para MVP, enquanto o frontend já começou a consolidar a camada de autenticação e feedback visual.
 
 ## 🤝 Contribuição
 
@@ -256,7 +250,7 @@ feat: adicionar dashboard autenticado
 fix: ajustar toast de login
 ```
 
-3. Teste localmente backend e frontend antes de abrir PR para `master`. [cite:584]
+3. Teste localmente backend e frontend antes de abrir PR para `master`.
 
 ## 📄 Licença
 MIT - veja o arquivo [LICENSE](LICENSE)
