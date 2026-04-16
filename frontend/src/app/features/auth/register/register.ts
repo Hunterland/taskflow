@@ -61,9 +61,12 @@ export class RegisterComponent {
       email: email ?? '',
       password: password ?? '',
     }).subscribe({
-      next: () => {
+      next: (response) => {
         this.isLoading = false;
+
         this.notification.success('Conta criada com sucesso!');
+        console.log('✅ Cadastro realizado com sucesso!', response);
+
         this.router.navigate(['/login']);
       },
       error: (error) => {
