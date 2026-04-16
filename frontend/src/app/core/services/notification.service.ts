@@ -17,26 +17,36 @@ export class NotificationService {
   };
 
   success(message: string, title = 'Sucesso') {
-    this.toastr.success(message, title, this.baseConfig);
+    setTimeout(() => {
+      this.toastr.success(message, title, this.baseConfig);
+    }, 0);
   }
 
   error(message: string, title = 'Erro') {
-    this.toastr.error(message, title, this.baseConfig);
+    setTimeout(() => {
+      this.toastr.error(message, title, this.baseConfig);
+    }, 0);
   }
 
   info(message: string, title = 'Informação') {
-    this.toastr.info(message, title, this.baseConfig);
+    setTimeout(() => {
+      this.toastr.info(message, title, this.baseConfig);
+    }, 0);
   }
 
   warning(message: string, title = 'Atenção') {
-    this.toastr.warning(message, title, this.baseConfig);
+    setTimeout(() => {
+      this.toastr.warning(message, title, this.baseConfig);
+    }, 0);
   }
 
   show(message: string, title?: string, config?: Partial<IndividualConfig>) {
-    this.toastr.show(message, title, {
-      ...this.baseConfig,
-      ...config,
-    });
+    setTimeout(() => {
+      this.toastr.show(message, title, {
+        ...this.baseConfig,
+        ...config,
+      });
+    }, 0);
   }
 
   clear() {
