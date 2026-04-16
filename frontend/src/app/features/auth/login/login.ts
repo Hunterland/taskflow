@@ -37,27 +37,29 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.login({
-      email: email ?? '',
-      password: password ?? '',
-    }).subscribe({
-      next: (response) => {
-        this.isLoading = false;
+    this.authService
+      .login({
+        email: email ?? '',
+        password: password ?? '',
+      })
+      .subscribe({
+        next: (response) => {
+          this.isLoading = false;
 
-        this.notification.success('Login realizado com sucesso!');
-        console.log('✅ Login realizado com sucesso!', response);
+          this.notification.success('Login realizado com sucesso!');
+          console.log('✅ Login realizado com sucesso!', response);
 
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.isLoading = false;
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          this.isLoading = false;
 
-        const msg = error?.error?.message || 'Email ou senha inválidos.';
-        this.notification.error(msg, 'Erro no login');
-        console.error('❌ Falha no login:', error);
+          const msg = error?.error?.message || 'Email ou senha inválidos.';
+          this.errorMessage = msg;
 
-        this.errorMessage = msg;
-      },
-    });
+          console.error('❌ Falha no login:', error);
+          this.notification.error(msg, 'Erro no login');
+        },
+      });
   }
 }
