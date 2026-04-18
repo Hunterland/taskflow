@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 // Guards
 import { authGuard } from './core/guards/auth.guard';
-// import { adminGuard } from './core/guards/admin.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 // Páginas públicas
 import { LoginComponent } from './features/auth/login/login';
@@ -10,7 +10,7 @@ import { RegisterComponent } from './features/auth/register/register';
 
 // Páginas protegidas
 import { HomeComponent } from './features/dashboard/home/home';
-// import { AdminHomeComponent } from './features/admin/admin-home/admin-home';
+import { AdminHomeComponent } from './features/admin/admin-home/admin-home';
 
 export const routes: Routes = [
   /**
@@ -52,11 +52,11 @@ export const routes: Routes = [
    *
    * Descomentar quando a área admin for criada.
    */
-  // {
-  //   path: 'admin',
-  //   component: AdminHomeComponent,
-  //   canActivate: [authGuard, adminGuard],
-  // },
+  {
+    path: 'admin',
+    component: AdminHomeComponent,
+    canActivate: [authGuard, adminGuard],
+  },
 
   /**
    * Rota coringa
