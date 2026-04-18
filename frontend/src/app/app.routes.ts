@@ -9,6 +9,9 @@ import { guestGuard } from './core/guards/guest.guard';
 import { LoginComponent } from './features/auth/login/login';
 import { RegisterComponent } from './features/auth/register/register';
 
+// Layout da área autenticada
+import { DashboardLayoutComponent } from './shared/components/dashboard-layout/dashboard-layout';
+
 // Páginas protegidas
 import { HomeComponent } from './features/dashboard/home/home';
 import { AdminHomeComponent } from './features/admin/admin-home/admin-home';
@@ -40,25 +43,44 @@ export const routes: Routes = [
   },
 
   /**
-   * Rotas protegidas
-   * Exigem usuário autenticado.
+   * Área autenticada com layout compartilhado.
+   * O header/sidebar ficam fixos no DashboardLayoutComponent
+   * e as páginas internas são renderizadas no router-outlet.
    */
   {
-    path: 'dashboard',
-    component: HomeComponent,
+    path: '',
+    component: DashboardLayoutComponent,
     canActivate: [authGuard],
-  },
+    canActivateChild: [authGuard],
+    children: [
+      /**
+       * Dashboard principal
+       */
+      {
+        path: 'dashboard',
+        component: HomeComponent,
+      },
 
-  /**
-   * Rotas administrativas
-   * Exemplo para uso futuro com autenticação + role ADMIN.
-   *
-   * Descomentar quando a área admin for criada.
-   */
-  {
-    path: 'admin',
-    component: AdminHomeComponent,
-    canActivate: [authGuard, adminGuard],
+      /**
+       * Área administrativa
+       */
+      {
+        path: 'admin',
+        component: AdminHomeComponent,
+        canActivate: [adminGuard],
+      },
+
+      /**
+       * Redirecionamento interno opcional:
+       * se no futuro quiser mandar o usuário autenticado
+       * para /dashboard ao acessar a raiz protegida.
+       */
+      // {
+      //   path: '',
+      //   redirectTo: 'dashboard',
+      //   pathMatch: 'full',
+      // },
+    ],
   },
 
   /**

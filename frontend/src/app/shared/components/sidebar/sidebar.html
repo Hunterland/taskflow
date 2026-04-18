@@ -1,0 +1,69 @@
+<div
+  *ngIf="isOpen"
+  class="fixed inset-0 z-40 bg-slate-950/35 lg:hidden"
+  (click)="closeSidebar.emit()"
+></div>
+
+<aside
+  class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 lg:translate-x-0"
+  [class.translate-x-0]="isOpen"
+>
+  <div class="flex h-16 items-center justify-between border-b border-slate-200 px-5">
+    <a
+      routerLink="/dashboard"
+      class="flex items-center gap-3 font-semibold text-slate-900"
+      (click)="onNavigate()"
+    >
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-sm font-bold text-white"
+      >
+        TF
+      </span>
+      <span>Taskflow</span>
+    </a>
+
+    <button
+      type="button"
+      class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+      (click)="closeSidebar.emit()"
+      aria-label="Fechar menu"
+    >
+      ✕
+    </button>
+  </div>
+
+  <div class="flex-1 px-3 py-4">
+    <nav class="space-y-1">
+      <a
+        *ngFor="let item of navItems()"
+        [routerLink]="item.path"
+        routerLinkActive="bg-slate-900 text-white"
+        [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
+        class="flex items-center rounded-xl px-3 py-3 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        (click)="onNavigate()"
+      >
+        {{ item.label }}
+      </a>
+    </nav>
+  </div>
+
+  <div class="border-t border-slate-200 px-4 py-4">
+    <div class="mb-3 rounded-2xl bg-slate-50 px-3 py-3">
+      <p class="text-xs text-slate-500">Usuário logado</p>
+      <p class="truncate text-sm font-semibold text-slate-900">
+        {{ authService.getCurrentUser()?.name }}
+      </p>
+      <p class="text-xs font-medium text-slate-500">
+        {{ authService.getCurrentUser()?.role }}
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="logout()"
+      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100"
+    >
+      Sair
+    </button>
+  </div>
+</aside>
