@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 // Guards
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 // Páginas públicas
 import { LoginComponent } from './features/auth/login/login';
@@ -30,10 +31,12 @@ export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
+    canActivate: [guestGuard],
   },
   {
     path: 'register',
     component: RegisterComponent,
+    canActivate: [guestGuard],
   },
 
   /**
