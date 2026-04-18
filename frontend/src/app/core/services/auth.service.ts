@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { AuthUser, UserRole } from '../models/auth-user.model';
 
@@ -28,7 +29,10 @@ export class AuthService {
 
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {}
 
   login(credentials: { email: string; password: string }): Observable<LoginResponse> {
     return this.http
@@ -70,6 +74,7 @@ export class AuthService {
     localStorage.removeItem('currentUser');
 
     this.currentUserSubject.next(null);
+    this.router.navigate(['/login']);
   }
 
   getAccessToken(): string | null {

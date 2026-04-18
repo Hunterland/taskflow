@@ -13,4 +13,8 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class HomeComponent {
   protected authService = inject(AuthService);
+
+  logout(): void {
+    this.authService.logout();
+  }
 }
