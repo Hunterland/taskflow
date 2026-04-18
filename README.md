@@ -4,7 +4,8 @@
 
 ## 🎯 Status Atual (Abril 2026)
 
-**✅ Backend MVP funcional** | **✅ Frontend iniciado e autenticado**
+**✅ Backend MVP funcional** | **✅ Frontend autenticado com área logada estruturada**.
+
 ```txt
 Backend
 ✅ Modularidade por domínio (auth/users/projects/tasks/core)
@@ -23,8 +24,11 @@ Frontend
 ✅ Redirecionamento após login para /dashboard
 ✅ Toast customizado com ngx-toastr
 ✅ NotificationService para padronizar alertas
-🔄 Dashboard em evolução
+✅ DashboardLayout com header + sidebar + router-outlet
+✅ Dashboard autenticado com resumo do usuário e KPIs iniciais
+🔄 Dashboard em evolução com dados reais
 🔄 Módulos de projetos e tarefas em construção
+🔄 Kanban com drag and drop planejado para Tasks
 ```
 
 **Swagger da API:** `http://localhost:3000/api` após subir o backend.
@@ -118,13 +122,26 @@ src/
 ```txt
 src/app/
 ├── core/
-│   ├── services/       # auth.service, notification.service
-│   └── interceptors/   # auth.interceptor
+│   ├── guards/             # auth.guard, admin.guard, guest.guard
+│   ├── interceptors/       # auth.interceptor
+│   └── services/           # auth.service, notification.service
 ├── features/
-│   └── auth/           # login
-├── dashboard/          # tela autenticada inicial
-└── app.config.ts       # providers globais
+│   ├── admin/              # telas administrativas
+│   ├── auth/               # login e register
+│   ├── dashboard/          # home autenticada
+│   ├── projects/           # módulo de projetos (em evolução)
+│   └── tasks/              # módulo de tarefas (em evolução)
+├── shared/
+│   └── components/
+│       ├── dashboard-layout/ # shell da área autenticada
+│       ├── header/           # topo da área logada
+│       └── sidebar/          # navegação lateral
+├── app.config.ts
+├── app.routes.ts
+└── app.ts
 ```
+
+A estrutura atual do frontend foi reorganizada para separar **layout compartilhado** e **features**, mantendo `header`, `sidebar` e `dashboard-layout` como componentes reutilizáveis da área autenticada.
 
 ## 🔐 Autenticação JWT
 
@@ -132,9 +149,19 @@ Fluxo atual de autenticação:
 1. `POST /auth/register` cria usuário e retorna tokens.
 2. `POST /auth/login` autentica e retorna access token e refresh token.
 3. Rotas protegidas usam `Authorization: Bearer <token>`.
-4. `POST /auth/refresh` emite novo access token.
+4. `POST /auth/refresh` emite novo access token.[1]
 
-No frontend, o login já está integrado e funcionando com redirecionamento para `/dashboard` após autenticação bem-sucedida.
+No frontend, o login já está integrado e funcionando com redirecionamento para `/dashboard` após autenticação bem-sucedida, além de persistência dos dados do usuário autenticado para exibição no dashboard.
+
+## 🧭 Área autenticada no frontend
+
+A aplicação frontend agora utiliza um **layout pai** para a área protegida, composto por:
+- `DashboardLayoutComponent`
+- `HeaderComponent`
+- `SidebarComponent`
+- `router-outlet` para renderização das páginas internas.
+
+Com isso, a rota `/dashboard` deixou de ser apenas uma tela isolada e passou a fazer parte de uma estrutura comum reutilizável para futuras páginas como `/projects`, `/tasks` e `/admin`.
 
 ## 📋 Endpoints principais
 
@@ -152,7 +179,7 @@ No frontend, o login já está integrado e funcionando com redirecionamento para
 | GET | `/tasks/my-tasks?status=TODO` | Tarefas atribuídas | ✅ |
 | GET | `/tasks/project/:projectId` | Tarefas por projeto | ✅ |
 
-Os endpoints acima já fazem parte da estrutura atual documentada do backend MVP.
+Os endpoints acima já fazem parte da estrutura atual documentada do backend MVP e sustentam a evolução futura das telas de Dashboard, Projects e Tasks.
 
 ## 🗄️ Schema Prisma
 
@@ -189,16 +216,38 @@ Esse schema representa a base atual do domínio de usuários, projetos e tarefas
 
 ## 🖥️ Progresso do Frontend
 
-O frontend já saiu do estágio de planejamento inicial e agora possui:
+O frontend já saiu do estágio inicial e agora possui:
 - tela de login integrada ao backend;
 - autenticação funcional;
 - redirecionamento para dashboard após login;
 - feedback visual com toast customizado;
-- serviço central de notificação para padronizar alertas da aplicação.
+- serviço central de notificação para padronizar alertas da aplicação;
+- área autenticada estruturada com sidebar e header;
+- dashboard com KPIs iniciais, resumo do usuário e ações rápidas.
+
+Atualmente, a Dashboard cumpre o papel de **visão geral do sistema**, enquanto o fluxo de operação mais pesado, como **Kanban com drag and drop**, está planejado para a futura tela de Tasks, não para a tela inicial.
 
 Exemplo de credencial usada em testes locais:
 - Email: `test2@taskflow.com`
 - Senha: `123456`
+
+## 🛣️ Roadmap por prioridade
+
+### Alta prioridade
+- Finalizar Dashboard com dados reais, próximos prazos e atividade recente.
+- Criar página de Projects com listagem básica.
+- Criar página de Tasks com listagem inicial antes do Kanban.
+
+### Média prioridade
+- Evoluir Tasks para board Kanban.
+- Implementar drag and drop entre colunas e persistência no backend.
+- Adicionar filtros por status, prioridade e prazo.
+- Expandir a área administrativa com funcionalidades reais.
+
+### Baixa prioridade
+- Adicionar gráficos e relatórios mais ricos na Dashboard.
+- Criar notificações mais avançadas e alertas contextuais.
+- Refinar microinterações, polimento visual e responsividade final.
 
 ## 🛠️ Scripts úteis
 
@@ -229,13 +278,17 @@ npm test
 | Frontend Angular iniciado | ✅ |
 | Login integrado | ✅ |
 | Dashboard autenticado | ✅ |
+| DashboardLayout com header/sidebar | ✅ |
 | Toast customizado | ✅ |
 | NotificationService | ✅ |
+| Página Projects | 🔄 |
+| Página Tasks | 🔄 |
+| Kanban com drag and drop | 🔄 |
 | Rate limiting | 🔄 |
 | Testes automatizados | 🔄 |
 | Revisão de migrations Prisma | 🔄 |
 
-O backend segue funcional para MVP, enquanto o frontend já começou a consolidar a camada de autenticação e feedback visual.
+O backend segue funcional para MVP, enquanto o frontend já consolidou autenticação, estrutura visual da área logada e uma dashboard inicial, preparando o terreno para os módulos de projetos e tarefas.
 
 ## 🤝 Contribuição
 
@@ -247,7 +300,8 @@ git checkout -b feat/nova-feature
 2. Faça commits descritivos:
 ```bash
 feat: adicionar dashboard autenticado
-fix: ajustar toast de login
+feat: estruturar dashboard-layout com sidebar e header
+fix: ajustar role do usuário no dashboard
 ```
 
 3. Teste localmente backend e frontend antes de abrir PR para `master`.
@@ -260,5 +314,5 @@ MIT - veja o arquivo [LICENSE](LICENSE)
 **Alan Barroncas**  
 Fullstack Developer  
 Manaus - AM  
-GitHub: https://github.com/Hunterland  
-LinkedIn: https://linkedin.com/in/alanbarroncas
+GitHub: [https://github.com/Hunterland](https://github.com/Hunterland)  
+LinkedIn: [https://linkedin.com/in/alanbarroncas](https://linkedin.com/in/alanbarroncas)
