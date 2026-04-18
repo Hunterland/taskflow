@@ -1,1 +1,53 @@
-<p>home works!</p>
+<section class="min-h-screen bg-slate-50 px-6 py-10">
+  <div class="mx-auto max-w-6xl">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
+      <p class="mt-2 text-slate-600">Bem-vindo ao Taskflow.</p>
+    </header>
+
+    <div class="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <p class="text-sm text-slate-600">
+        Usuário: <strong>{{ authService.getCurrentUser()?.name }}</strong>
+      </p>
+      <p class="mt-2 text-sm text-slate-600">
+        E-mail: <strong>{{ authService.getCurrentUser()?.email }}</strong>
+      </p>
+      <p class="mt-2 text-sm text-slate-600">
+        Perfil: <strong>{{ authService.getCurrentUser()?.role }}</strong>
+      </p>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-900">Projetos</h2>
+        <p class="mt-3 text-sm text-slate-600">
+          Área reservada para visão dos projetos do usuário.
+        </p>
+      </article>
+
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-900">Tarefas</h2>
+        <p class="mt-3 text-sm text-slate-600">
+          Área reservada para tarefas, status e acompanhamento.
+        </p>
+      </article>
+
+      <article
+        *ngIf="authService.isAdmin()"
+        class="rounded-2xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm"
+      >
+        <h2 class="text-lg font-semibold text-indigo-900">Administração</h2>
+        <p class="mt-3 text-sm text-indigo-700">
+          Acesso exclusivo para gerenciamento administrativo do sistema.
+        </p>
+
+        <a
+          routerLink="/admin"
+          class="mt-4 inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
+        >
+          Acessar painel admin
+        </a>
+      </article>
+    </div>
+  </div>
+</section>
