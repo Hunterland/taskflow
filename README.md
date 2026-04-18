@@ -315,4 +315,4 @@ MIT - veja o arquivo [LICENSE](LICENSE)
 Fullstack Developer  
 Manaus - AM  
 GitHub: [https://github.com/Hunterland](https://github.com/Hunterland)  
-LinkedIn: [https://linkedin.com/in/alanbarroncas](https://linkedin.com/in/alanbarroncas)
+LinkedIn: [https://linkedin.com/in/alanbarroncas](https://linkedin.com/in/alan-barroncas95)
