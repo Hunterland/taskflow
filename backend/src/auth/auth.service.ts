@@ -21,7 +21,8 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  // register e login usando email e senha, com hash de senha e geração de token JWT
+  //  registro de usuário, que verifica se o email já existe, gera um hash da senha e salva o usuário no banco de dados,  
+  //  retornando um token JWT
   async register(dto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -55,7 +56,8 @@ export class AuthService {
     };
   }
 
-  // login usando email e senha, com verificação de hash de senha e geração de token JWT
+  //  login de usuário, que verifica se o email existe, compara a senha fornecida com o
+  //  hash armazenado e retorna um token JWT se as credenciais forem válidas.
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
