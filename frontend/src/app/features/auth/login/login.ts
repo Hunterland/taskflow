@@ -43,12 +43,9 @@ export class LoginComponent {
         password: password ?? '',
       })
       .subscribe({
-        next: (response) => {
+        next: () => {
           this.isLoading = false;
-
           this.notification.success('Login realizado com sucesso!');
-          console.log('✅ Login realizado com sucesso!', response);
-
           this.router.navigate(['/dashboard']);
         },
         error: (error) => {
@@ -56,8 +53,6 @@ export class LoginComponent {
 
           const msg = error?.error?.message || 'Email ou senha inválidos.';
           this.errorMessage = msg;
-
-          console.error('❌ Falha no login:', error);
           this.notification.error(msg, 'Erro no login');
         },
       });
