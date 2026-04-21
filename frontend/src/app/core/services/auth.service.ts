@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { AuthUser, UserRole } from '../models/auth-user.model';
@@ -22,11 +22,9 @@ export interface RegisterDto {
 })
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
-  private readonly storage = sessionStorage;
+  private readonly storage: Storage = sessionStorage;
 
-  private currentUserSubject = new BehaviorSubject<AuthUser | null>(
-    this.getStoredUser(),
-  );
+  private currentUserSubject = new BehaviorSubject<AuthUser | null>(this.getStoredUser());
 
   currentUser$ = this.currentUserSubject.asObservable();
 
@@ -36,13 +34,11 @@ export class AuthService {
   ) {}
 
   login(credentials: { email: string; password: string }): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
-      .pipe(
-        tap((response) => {
-          this.persistSession(response);
-        }),
-      );
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
+      tap((response) => {
+        this.persistSession(response);
+      }),
+    );
   }
 
   register(userData: RegisterDto): Observable<unknown> {
@@ -52,13 +48,16 @@ export class AuthService {
   refresh(): Observable<LoginResponse> {
     const refreshToken = this.getRefreshToken();
 
-    return this.http
-      .post<LoginResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken })
-      .pipe(
-        tap((response) => {
-          this.persistSession(response);
-        }),
-      );
+    if (!refreshToken) {
+      this.clearSession();
+      return throwError(() => new Error('Refresh token não encontrado.'));
+    }
+
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken }).pipe(
+      tap((response) => {
+        this.persistSession(response);
+      }),
+    );
   }
 
   logout(): void {
@@ -93,8 +92,7 @@ export class AuthService {
   isUser(): boolean {
     return this.hasRole('USER');
   }
-  
-  //  --- Private Methods ---
+
   private persistSession(response: LoginResponse): void {
     this.storage.setItem('accessToken', response.accessToken);
     this.storage.setItem('refreshToken', response.refreshToken);
