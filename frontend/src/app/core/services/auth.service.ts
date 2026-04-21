@@ -22,6 +22,7 @@ export interface RegisterDto {
 })
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
+  private readonly storage = sessionStorage;
 
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(
     this.getStoredUser(),
@@ -39,46 +40,38 @@ export class AuthService {
       .post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
         tap((response) => {
-          localStorage.setItem('accessToken', response.accessToken);
-          localStorage.setItem('refreshToken', response.refreshToken);
-          localStorage.setItem('currentUser', JSON.stringify(response.user));
-
-          this.currentUserSubject.next(response.user);
+          this.persistSession(response);
         }),
       );
   }
 
-  register(userData: RegisterDto): Observable<any> {
+  register(userData: RegisterDto): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
 
   refresh(): Observable<LoginResponse> {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = this.getRefreshToken();
 
     return this.http
       .post<LoginResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken })
       .pipe(
         tap((response) => {
-          localStorage.setItem('accessToken', response.accessToken);
-          localStorage.setItem('refreshToken', response.refreshToken);
-          localStorage.setItem('currentUser', JSON.stringify(response.user));
-
-          this.currentUserSubject.next(response.user);
+          this.persistSession(response);
         }),
       );
   }
 
   logout(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('currentUser');
-
-    this.currentUserSubject.next(null);
+    this.clearSession();
     this.router.navigate(['/login']);
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
+    return this.storage.getItem('accessToken');
+  }
+
+  getRefreshToken(): string | null {
+    return this.storage.getItem('refreshToken');
   }
 
   getCurrentUser(): AuthUser | null {
@@ -100,15 +93,31 @@ export class AuthService {
   isUser(): boolean {
     return this.hasRole('USER');
   }
+  
+  //  --- Private Methods ---
+  private persistSession(response: LoginResponse): void {
+    this.storage.setItem('accessToken', response.accessToken);
+    this.storage.setItem('refreshToken', response.refreshToken);
+    this.storage.setItem('currentUser', JSON.stringify(response.user));
+    this.currentUserSubject.next(response.user);
+  }
+
+  private clearSession(): void {
+    this.storage.removeItem('accessToken');
+    this.storage.removeItem('refreshToken');
+    this.storage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+  }
 
   private getStoredUser(): AuthUser | null {
-    const storedUser = localStorage.getItem('currentUser');
+    const storedUser = this.storage.getItem('currentUser');
 
     if (!storedUser) return null;
 
     try {
       return JSON.parse(storedUser) as AuthUser;
     } catch {
+      this.storage.removeItem('currentUser');
       return null;
     }
   }
