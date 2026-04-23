@@ -16,7 +16,7 @@ import { DashboardLayoutComponent } from './shared/components/dashboard-layout/d
 import { HomeComponent } from './features/dashboard/home/home';
 import { AdminHomeComponent } from './features/admin/admin-home/admin-home';
 import { ProjectsComponent } from './features/projects/projects';
-
+import { ProjectDetailsComponent } from './features/projects/project-details/project-details';
 
 export const routes: Routes = [
   /**
@@ -65,6 +65,10 @@ export const routes: Routes = [
       {
         path: 'projects',
         component: ProjectsComponent,
+      },
+      {
+        path: 'projects/:id',
+        component: ProjectDetailsComponent,
       },
       /**
        * Área administrativa
