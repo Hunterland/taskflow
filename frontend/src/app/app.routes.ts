@@ -15,6 +15,8 @@ import { DashboardLayoutComponent } from './shared/components/dashboard-layout/d
 // Páginas protegidas
 import { HomeComponent } from './features/dashboard/home/home';
 import { AdminHomeComponent } from './features/admin/admin-home/admin-home';
+import { ProjectsComponent } from './features/projects/projects';
+
 
 export const routes: Routes = [
   /**
@@ -60,7 +62,10 @@ export const routes: Routes = [
         path: 'dashboard',
         component: HomeComponent,
       },
-
+      {
+        path: 'projects',
+        component: ProjectsComponent,
+      },
       /**
        * Área administrativa
        */
