@@ -60,9 +60,11 @@ export class AuthService {
     );
   }
 
-  logout(): void {
+  logout(reason?: 'session-expired' | 'manual'): void {
     this.clearSession();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], {
+      queryParams: reason ? { reason } : undefined,
+    });
   }
 
   getAccessToken(): string | null {

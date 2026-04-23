@@ -31,7 +31,7 @@ export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
           'Sessão expirada',
         );
 
-        authService.logout();
+        authService.logout('session-expired');
       }
 
       return throwError(() => error);

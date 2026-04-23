@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
@@ -16,6 +16,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private notification = inject(NotificationService);
 
   isLoading = false;
@@ -25,6 +26,14 @@ export class LoginComponent {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
+
+  constructor() {
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+
+    if (reason === 'session-expired') {
+      this.errorMessage = 'Sua sessão expirou. Faça login novamente.';
+    }
+  }
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
