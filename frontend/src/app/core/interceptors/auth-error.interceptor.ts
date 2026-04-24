@@ -1,13 +1,12 @@
 import { inject } from '@angular/core';
-import {
-  HttpErrorResponse,
-  HttpInterceptorFn,
-} from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
 
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../services/notification.service';
 import { environment } from '../../../environments/environment';
+
+let isLoggingOut = false;
 
 export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -21,17 +20,20 @@ export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      const isAuthError = error.status === 401 || error.status === 403;
-      const hasSession =
-        !!authService.getAccessToken() || !!authService.getRefreshToken();
+      const isUnauthorized = error.status === 401;
+      const hasSession = !!authService.getAccessToken() || !!authService.getCurrentUser();
 
-      if (isApiRequest && !isAuthRoute && isAuthError && hasSession) {
-        notificationService.warning(
-          'Sua sessão expirou. Faça login novamente.',
-          'Sessão expirada',
-        );
+      if (isApiRequest && !isAuthRoute && isUnauthorized && hasSession && !isLoggingOut) {
+        isLoggingOut = true;
 
-        authService.logout('session-expired');
+        setTimeout(() => {
+          notificationService.warning(
+            'Sua sessão expirou. Faça login novamente.',
+            'Sessão expirada',
+          );
+          authService.logout('session-expired');
+          isLoggingOut = false;
+        });
       }
 
       return throwError(() => error);

@@ -36,34 +36,34 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
+    if (this.isLoading) return;
+
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
     const { email, password } = this.loginForm.getRawValue();
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/dashboard';
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService
-      .login({
-        email: email ?? '',
-        password: password ?? '',
-      })
-      .subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.notification.success('Login realizado com sucesso!');
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          this.isLoading = false;
-
-          const msg = error?.error?.message || 'Email ou senha inválidos.';
-          this.errorMessage = msg;
-          this.notification.error(msg, 'Erro no login');
-        },
-      });
+    this.authService.login({
+      email: email ?? '',
+      password: password ?? '',
+    }).subscribe({
+      next: () => {
+        this.isLoading = false;
+        setTimeout(() => this.notification.success('Login realizado com sucesso!'));
+        this.router.navigateByUrl(returnUrl);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        const msg = error?.error?.message || 'Email ou senha inválidos.';
+        this.errorMessage = Array.isArray(msg) ? msg.join(', ') : msg;
+        setTimeout(() => this.notification.error(this.errorMessage, 'Erro no login'));
+      },
+    });
   }
 }
