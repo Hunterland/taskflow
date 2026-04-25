@@ -5,7 +5,7 @@
  * Taskflow Backend com JWT + Prisma
  * OpenAPI spec version: 1.0
  */
-import type { CreateProjectDto, UpdateProjectDto } from '.././model';
+import type { CreateProjectDto, ProjectResponseDto, UpdateProjectDto } from '.././model';
 
 import { customInstance } from '../../mutator';
 
@@ -13,7 +13,7 @@ import { customInstance } from '../../mutator';
  * @summary Criar projeto do usuário autenticado
  */
 export const projectsControllerCreate = (createProjectDto: CreateProjectDto) => {
-  return customInstance<void>({
+  return customInstance<ProjectResponseDto>({
     url: `/projects`,
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -24,19 +24,19 @@ export const projectsControllerCreate = (createProjectDto: CreateProjectDto) => 
  * @summary Listar projetos do usuário autenticado
  */
 export const projectsControllerFindAll = () => {
-  return customInstance<void>({ url: `/projects`, method: 'GET' });
+  return customInstance<ProjectResponseDto[]>({ url: `/projects`, method: 'GET' });
 };
 /**
  * @summary Obter detalhes de um projeto do owner
  */
 export const projectsControllerFindOne = (id: string) => {
-  return customInstance<void>({ url: `/projects/${id}`, method: 'GET' });
+  return customInstance<ProjectResponseDto>({ url: `/projects/${id}`, method: 'GET' });
 };
 /**
  * @summary Atualizar projeto do owner
  */
 export const projectsControllerUpdate = (id: string, updateProjectDto: UpdateProjectDto) => {
-  return customInstance<void>({
+  return customInstance<ProjectResponseDto>({
     url: `/projects/${id}`,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -47,7 +47,7 @@ export const projectsControllerUpdate = (id: string, updateProjectDto: UpdatePro
  * @summary Remover projeto e suas tasks
  */
 export const projectsControllerRemove = (id: string) => {
-  return customInstance<void>({ url: `/projects/${id}`, method: 'DELETE' });
+  return customInstance<ProjectResponseDto>({ url: `/projects/${id}`, method: 'DELETE' });
 };
 export type ProjectsControllerCreateResult = NonNullable<
   Awaited<ReturnType<typeof projectsControllerCreate>>

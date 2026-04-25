@@ -12,7 +12,7 @@ export class CreateProjectDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(120)
-  name: string;
+  name!: string;
 
   @ApiProperty({ required: false })
   @IsString()

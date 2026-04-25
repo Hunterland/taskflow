@@ -10,6 +10,8 @@ export * from './createProjectDto';
 export * from './createTaskDto';
 export * from './createTaskDtoStatus';
 export * from './loginDto';
+export * from './projectResponseDto';
+export * from './projectResponseDtoDescription';
 export * from './registerDto';
 export * from './tasksControllerFindMyTasksParams';
 export * from './tasksControllerFindMyTasksStatus';

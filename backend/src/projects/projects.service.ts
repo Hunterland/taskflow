@@ -1,68 +1,64 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../core/prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectResponseDto } from './dto/project-response.dto';
 
 @Injectable()
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
-  /**
-   * CREATE Project
-   * Owner vem do JWT
-   */
-  async create(dto: CreateProjectDto, ownerId: number) {
-    return this.prisma.project.create({
+  private toProjectResponse(project: {
+    id: number;
+    name: string;
+    description: string | null;
+    ownerId: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }): ProjectResponseDto {
+    return {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      ownerId: project.ownerId,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+    };
+  }
+
+  async create(
+    dto: CreateProjectDto,
+    ownerId: number,
+  ): Promise<ProjectResponseDto> {
+    const project = await this.prisma.project.create({
       data: {
         name: dto.name,
         description: dto.description,
         owner: { connect: { id: ownerId } },
       },
-      include: {
-        owner: true,
-      },
     });
+
+    return this.toProjectResponse(project);
   }
 
-  /**
-   * LIST Projects do usuário logado
-   * Retorna contagem de tasks (evita payload pesado)
-   */
-  async findAll(userId: number) {
-    return this.prisma.project.findMany({
+  async findAll(userId: number): Promise<ProjectResponseDto[]> {
+    const projects = await this.prisma.project.findMany({
       where: {
         ownerId: userId,
-      },
-      include: {
-        owner: true,
-        _count: {
-          select: { tasks: true },
-        },
       },
       orderBy: {
         updatedAt: 'desc',
       },
     });
+
+    return projects.map((project) => this.toProjectResponse(project));
   }
 
-  /**
-   * DETALHES de 1 Project
-   * 404 se não existe OU não pertence ao usuário
-   */
-  async findOne(id: number, userId: number) {
+  async findOne(id: number, userId: number): Promise<ProjectResponseDto> {
     const project = await this.prisma.project.findFirst({
       where: {
         id,
         ownerId: userId,
-      },
-      include: {
-        owner: true,
-        tasks: {
-          orderBy: { createdAt: 'desc' },
-        },
       },
     });
 
@@ -70,14 +66,14 @@ export class ProjectsService {
       throw new NotFoundException('Projeto não encontrado');
     }
 
-    return project;
+    return this.toProjectResponse(project);
   }
 
-  /**
-   * UPDATE Project
-   * 404 se não existe OU não pertence
-   */
-  async update(id: number, dto: UpdateProjectDto, userId: number) {
+  async update(
+    id: number,
+    dto: UpdateProjectDto,
+    userId: number,
+  ): Promise<ProjectResponseDto> {
     const project = await this.prisma.project.findUnique({
       where: { id },
       select: { ownerId: true },
@@ -87,7 +83,7 @@ export class ProjectsService {
       throw new NotFoundException('Projeto não encontrado');
     }
 
-    return this.prisma.project.update({
+    const updatedProject = await this.prisma.project.update({
       where: { id },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
@@ -95,18 +91,12 @@ export class ProjectsService {
           description: dto.description,
         }),
       },
-      include: {
-        owner: true,
-      },
     });
+
+    return this.toProjectResponse(updatedProject);
   }
 
-  /**
-   * DELETE Project
-   * Cascade automático nas tasks (definido no schema)
-   * 404 se não existe OU não pertence
-   */
-  async remove(id: number, userId: number) {
+  async remove(id: number, userId: number): Promise<ProjectResponseDto> {
     const project = await this.prisma.project.findUnique({
       where: { id },
       select: { ownerId: true },
@@ -116,8 +106,10 @@ export class ProjectsService {
       throw new NotFoundException('Projeto não encontrado');
     }
 
-    return this.prisma.project.delete({
+    const deletedProject = await this.prisma.project.delete({
       where: { id },
     });
+
+    return this.toProjectResponse(deletedProject);
   }
 }

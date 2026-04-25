@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface UpdateProjectDto {
-  name?: string;
-  description?: string;
-}
+/**
+ * @nullable
+ */
+export type ProjectResponseDtoDescription = { [key: string]: unknown } | null;
