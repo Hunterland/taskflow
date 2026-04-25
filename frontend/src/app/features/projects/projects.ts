@@ -1,20 +1,15 @@
-import { Component } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-type ProjectStatus = 'ACTIVE' | 'IN_PROGRESS' | 'COMPLETED';
-type StatusFilter = ProjectStatus | 'ALL';
-
-interface Project {
-  id: number;
-  name: string;
-  description: string;
-  status: ProjectStatus;
-  pendingTasks: number;
-  teamMembers: number;
-  updatedAt: string;
-}
+import { ProjectsService } from '../../core/services/projects.service';
+import type { ProjectResponseDto } from '../../core/api/generated/model';
 
 @Component({
   selector: 'app-projects',
@@ -23,54 +18,29 @@ interface Project {
   templateUrl: './projects.html',
   styleUrl: './projects.css',
 })
-export class ProjectsComponent {
+export class ProjectsComponent implements OnInit {
+  private projectsService = inject(ProjectsService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
   searchTerm = '';
-  activeStatusFilter: StatusFilter = 'ALL';
   loading = false;
+  errorMessage = '';
 
-  projects: Project[] = [
-    {
-      id: 1,
-      name: 'Portal do Cliente',
-      description: 'Plataforma para acompanhamento de solicitações, documentos e comunicação com clientes.',
-      status: 'ACTIVE',
-      pendingTasks: 18,
-      teamMembers: 4,
-      updatedAt: '22 de abril de 2026',
-    },
-    {
-      id: 2,
-      name: 'App de Eventos',
-      description: 'Sistema para cadastro, gerenciamento de inscrições e acompanhamento de eventos culturais.',
-      status: 'IN_PROGRESS',
-      pendingTasks: 9,
-      teamMembers: 3,
-      updatedAt: '20 de abril de 2026',
-    },
-    {
-      id: 3,
-      name: 'Landing Page Institucional',
-      description: 'Página institucional com foco em apresentação de serviços, formulário de contato e SEO.',
-      status: 'COMPLETED',
-      pendingTasks: 0,
-      teamMembers: 2,
-      updatedAt: '18 de abril de 2026',
-    },
-  ];
+  projects: ProjectResponseDto[] = [];
 
-  get filteredProjects(): Project[] {
+  ngOnInit(): void {
+    void this.loadProjects();
+  }
+
+  get filteredProjects(): ProjectResponseDto[] {
     const term = this.searchTerm.trim().toLowerCase();
 
     return this.projects.filter((project) => {
-      const matchesSearch =
-        !term ||
-        project.name.toLowerCase().includes(term) ||
-        project.description.toLowerCase().includes(term);
+      const name = String(project.name ?? '').toLowerCase();
+      const description = String(project.description ?? '').toLowerCase();
 
-      const matchesStatus =
-        this.activeStatusFilter === 'ALL' || project.status === this.activeStatusFilter;
-
-      return matchesSearch && matchesStatus;
+      return !term || name.includes(term) || description.includes(term);
     });
   }
 
@@ -82,45 +52,55 @@ export class ProjectsComponent {
     this.searchTerm = this.searchTerm.trimStart();
   }
 
-  setStatusFilter(filter: StatusFilter): void {
-    this.activeStatusFilter = filter;
-  }
+  async loadProjects(): Promise<void> {
+    this.loading = true;
+    this.errorMessage = '';
+    this.cdr.detectChanges();
 
-  toggleFilters(): void {
-    this.activeStatusFilter = this.activeStatusFilter === 'ALL' ? 'ACTIVE' : 'ALL';
+    try {
+      const projects = await this.projectsService.findAll();
+      this.projects = projects;
+    } catch (error) {
+      console.error('Erro ao carregar projetos:', error);
+      this.errorMessage = 'Não foi possível carregar os projetos.';
+      this.projects = [];
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   openCreateProject(): void {
-    console.log('Abrir modal/rota de novo projeto');
+    this.router.navigate(['/projects/new']);
   }
 
-  editProject(project: Project): void {
-    console.log('Editar projeto', project);
+  editProject(project: ProjectResponseDto): void {
+    this.router.navigate(['/projects', project.id, 'edit']);
   }
 
-  deleteProject(project: Project): void {
-    console.log('Excluir projeto', project);
-  }
+  async deleteProject(project: ProjectResponseDto): Promise<void> {
+    const confirmed = window.confirm(
+      `Deseja realmente excluir o projeto "${project.name}"?`,
+    );
 
-  getStatusLabel(status: ProjectStatus): string {
-    switch (status) {
-      case 'ACTIVE':
-        return 'Ativo';
-      case 'IN_PROGRESS':
-        return 'Em andamento';
-      case 'COMPLETED':
-        return 'Concluído';
+    if (!confirmed) return;
+
+    try {
+      await this.projectsService.remove(String(project.id));
+      this.projects = this.projects.filter((item) => item.id !== project.id);
+    } catch (error) {
+      console.error('Erro ao excluir projeto:', error);
+      this.errorMessage = 'Não foi possível excluir o projeto.';
+    } finally {
+      this.cdr.detectChanges();
     }
   }
 
-  getStatusClasses(status: ProjectStatus): string {
-    switch (status) {
-      case 'ACTIVE':
-        return 'bg-emerald-50 text-emerald-700';
-      case 'IN_PROGRESS':
-        return 'bg-amber-50 text-amber-700';
-      case 'COMPLETED':
-        return 'bg-slate-100 text-slate-700';
-    }
+  formatDate(date: string | Date): string {
+    return new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
   }
 }
