@@ -6,29 +6,33 @@ import {
   projectsControllerUpdate,
   projectsControllerRemove,
 } from '../api/generated/projects/projects';
-import { CreateProjectDto, UpdateProjectDto } from '../../../app/core/api/generated/model';
+import type {
+  CreateProjectDto,
+  ProjectResponseDto,
+  UpdateProjectDto,
+} from '../api/generated/model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProjectsService {
-  findAll() {
+  findAll(): Promise<ProjectResponseDto[]> {
     return projectsControllerFindAll();
   }
 
-  findOne(id: string) {
+  findOne(id: string): Promise<ProjectResponseDto> {
     return projectsControllerFindOne(id);
   }
 
-  create(dto: CreateProjectDto) {
+  create(dto: CreateProjectDto): Promise<ProjectResponseDto> {
     return projectsControllerCreate(dto);
   }
 
-  update(id: string, dto: UpdateProjectDto) {
+  update(id: string, dto: UpdateProjectDto): Promise<ProjectResponseDto> {
     return projectsControllerUpdate(id, dto);
   }
 
-  remove(id: string) {
+  remove(id: string): Promise<ProjectResponseDto> {
     return projectsControllerRemove(id);
   }
 }
