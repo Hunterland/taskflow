@@ -46,9 +46,14 @@ export class ProjectsService {
       where: {
         ownerId: userId,
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        {
+          id: 'asc',
+        },
+      ],
     });
 
     return projects.map((project) => this.toProjectResponse(project));

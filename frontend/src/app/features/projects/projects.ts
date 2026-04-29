@@ -1,23 +1,11 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  inject,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 
 import { ProjectsService } from '../../core/services/projects.service';
-import type {
-  CreateProjectDto,
-  ProjectResponseDto,
-} from '../../core/api/generated/model';
+import type { CreateProjectDto, ProjectResponseDto } from '../../core/api/generated/model';
 
 @Component({
   selector: 'app-projects',
@@ -68,23 +56,13 @@ export class ProjectsComponent implements OnInit {
     this.searchTerm = this.searchTerm.trimStart();
   }
 
-  private sortProjects(projects: ProjectResponseDto[]): ProjectResponseDto[] {
-    return [...projects].sort((a, b) => {
-      const idA = Number(a.id ?? 0);
-      const idB = Number(b.id ?? 0);
-
-      return idA - idB;
-    });
-  }
-
   async loadProjects(): Promise<void> {
     this.loading = true;
     this.errorMessage = '';
     this.cdr.detectChanges();
 
     try {
-      const projects = await this.projectsService.findAll();
-      this.projects = this.sortProjects(projects);
+      this.projects = await this.projectsService.findAll();
     } catch (error) {
       console.error('Erro ao carregar projetos:', error);
       this.errorMessage = 'Não foi possível carregar os projetos.';
@@ -152,9 +130,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   async deleteProject(project: ProjectResponseDto): Promise<void> {
-    const confirmed = window.confirm(
-      `Deseja realmente excluir o projeto "${project.name}"?`,
-    );
+    const confirmed = window.confirm(`Deseja realmente excluir o projeto "${project.name}"?`);
 
     if (!confirmed) return;
 
