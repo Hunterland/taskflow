@@ -68,6 +68,15 @@ export class ProjectsComponent implements OnInit {
     this.searchTerm = this.searchTerm.trimStart();
   }
 
+  private sortProjects(projects: ProjectResponseDto[]): ProjectResponseDto[] {
+    return [...projects].sort((a, b) => {
+      const idA = Number(a.id ?? 0);
+      const idB = Number(b.id ?? 0);
+
+      return idA - idB;
+    });
+  }
+
   async loadProjects(): Promise<void> {
     this.loading = true;
     this.errorMessage = '';
@@ -75,7 +84,7 @@ export class ProjectsComponent implements OnInit {
 
     try {
       const projects = await this.projectsService.findAll();
-      this.projects = projects;
+      this.projects = this.sortProjects(projects);
     } catch (error) {
       console.error('Erro ao carregar projetos:', error);
       this.errorMessage = 'Não foi possível carregar os projetos.';
@@ -91,13 +100,14 @@ export class ProjectsComponent implements OnInit {
       name: '',
       description: '',
     });
-    this.isCreateModalOpen = true;
     this.errorMessage = '';
+    this.isCreateModalOpen = true;
     this.cdr.detectChanges();
   }
 
   closeCreateModal(): void {
     if (this.creatingProject) return;
+
     this.isCreateModalOpen = false;
     this.cdr.detectChanges();
   }
@@ -120,13 +130,14 @@ export class ProjectsComponent implements OnInit {
     };
 
     try {
-      const createdProject = await this.projectsService.create(payload);
-      this.projects = [createdProject, ...this.projects];
+      await this.projectsService.create(payload);
       this.isCreateModalOpen = false;
       this.createProjectForm.reset({
         name: '',
         description: '',
       });
+
+      await this.loadProjects();
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
       this.errorMessage = 'Não foi possível criar o projeto.';
@@ -149,7 +160,7 @@ export class ProjectsComponent implements OnInit {
 
     try {
       await this.projectsService.remove(String(project.id));
-      this.projects = this.projects.filter((item) => item.id !== project.id);
+      await this.loadProjects();
     } catch (error) {
       console.error('Erro ao excluir projeto:', error);
       this.errorMessage = 'Não foi possível excluir o projeto.';
