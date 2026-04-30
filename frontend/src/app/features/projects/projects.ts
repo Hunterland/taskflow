@@ -5,7 +5,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 
 import { ProjectsService } from '../../core/services/projects.service';
-import type { CreateProjectDto, ProjectResponseDto } from '../../core/api/generated/model';
+import type {
+  CreateProjectDto,
+  ProjectResponseDto,
+  UpdateProjectDto,
+} from '../../core/api/generated/model';
 
 @Component({
   selector: 'app-projects',
@@ -23,12 +27,24 @@ export class ProjectsComponent implements OnInit {
   searchTerm = '';
   loading = false;
   errorMessage = '';
-  creatingProject = false;
-  isCreateModalOpen = false;
+  successMessage = '';
 
+  creatingProject = false;
+  updatingProject = false;
+  deletingProjectId: number | null = null;
+
+  isCreateModalOpen = false;
+  isEditModalOpen = false;
+
+  selectedProject: ProjectResponseDto | null = null;
   projects: ProjectResponseDto[] = [];
 
   createProjectForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(120)]],
+    description: ['', [Validators.maxLength(1000)]],
+  });
+
+  editProjectForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.maxLength(1000)]],
   });
@@ -52,12 +68,28 @@ export class ProjectsComponent implements OnInit {
     return this.filteredProjects.length;
   }
 
+  get hasProjects(): boolean {
+    return this.projects.length > 0;
+  }
+
+  get hasFilteredProjects(): boolean {
+    return this.filteredProjects.length > 0;
+  }
+
   applySearch(): void {
     this.searchTerm = this.searchTerm.trimStart();
   }
 
-  async loadProjects(): Promise<void> {
-    this.loading = true;
+  clearMessages(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  async loadProjects(showLoader = true): Promise<void> {
+    if (showLoader) {
+      this.loading = true;
+    }
+
     this.errorMessage = '';
     this.cdr.detectChanges();
 
@@ -73,12 +105,18 @@ export class ProjectsComponent implements OnInit {
     }
   }
 
+  openProject(project: ProjectResponseDto): void {
+    this.router.navigate(['/projects', project.id]);
+  }
+
   openCreateProject(): void {
+    this.clearMessages();
+
     this.createProjectForm.reset({
       name: '',
       description: '',
     });
-    this.errorMessage = '';
+
     this.isCreateModalOpen = true;
     this.cdr.detectChanges();
   }
@@ -98,7 +136,7 @@ export class ProjectsComponent implements OnInit {
     }
 
     this.creatingProject = true;
-    this.errorMessage = '';
+    this.clearMessages();
 
     const formValue = this.createProjectForm.getRawValue();
 
@@ -109,13 +147,15 @@ export class ProjectsComponent implements OnInit {
 
     try {
       await this.projectsService.create(payload);
+
       this.isCreateModalOpen = false;
       this.createProjectForm.reset({
         name: '',
         description: '',
       });
 
-      await this.loadProjects();
+      await this.loadProjects(false);
+      this.successMessage = 'Projeto criado com sucesso.';
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
       this.errorMessage = 'Não foi possível criar o projeto.';
@@ -125,8 +165,69 @@ export class ProjectsComponent implements OnInit {
     }
   }
 
+  openEditProject(project: ProjectResponseDto): void {
+    this.clearMessages();
+    this.selectedProject = project;
+
+    this.editProjectForm.reset({
+      name: String(project.name ?? ''),
+      description: String(project.description ?? ''),
+    });
+
+    this.isEditModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  closeEditModal(): void {
+    if (this.updatingProject) return;
+
+    this.isEditModalOpen = false;
+    this.selectedProject = null;
+    this.cdr.detectChanges();
+  }
+
+  async submitEditProject(): Promise<void> {
+    if (!this.selectedProject) {
+      this.errorMessage = 'Nenhum projeto selecionado para edição.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (this.editProjectForm.invalid) {
+      this.editProjectForm.markAllAsTouched();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.updatingProject = true;
+    this.clearMessages();
+
+    const formValue = this.editProjectForm.getRawValue();
+
+    const payload: UpdateProjectDto = {
+      name: formValue.name.trim(),
+      description: formValue.description.trim() || undefined,
+    };
+
+    try {
+      await this.projectsService.update(String(this.selectedProject.id), payload);
+
+      this.isEditModalOpen = false;
+      this.selectedProject = null;
+
+      await this.loadProjects(false);
+      this.successMessage = 'Projeto atualizado com sucesso.';
+    } catch (error) {
+      console.error('Erro ao atualizar projeto:', error);
+      this.errorMessage = 'Não foi possível atualizar o projeto.';
+    } finally {
+      this.updatingProject = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   editProject(project: ProjectResponseDto): void {
-    this.router.navigate(['/projects', project.id, 'edit']);
+    this.openEditProject(project);
   }
 
   async deleteProject(project: ProjectResponseDto): Promise<void> {
@@ -134,15 +235,24 @@ export class ProjectsComponent implements OnInit {
 
     if (!confirmed) return;
 
+    this.clearMessages();
+    this.deletingProjectId = Number(project.id);
+
     try {
       await this.projectsService.remove(String(project.id));
-      await this.loadProjects();
+      await this.loadProjects(false);
+      this.successMessage = 'Projeto excluído com sucesso.';
     } catch (error) {
       console.error('Erro ao excluir projeto:', error);
       this.errorMessage = 'Não foi possível excluir o projeto.';
     } finally {
+      this.deletingProjectId = null;
       this.cdr.detectChanges();
     }
+  }
+
+  retryLoadProjects(): void {
+    void this.loadProjects();
   }
 
   formatDate(date: string | Date): string {
