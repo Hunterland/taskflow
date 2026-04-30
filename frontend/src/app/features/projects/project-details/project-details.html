@@ -1,0 +1,256 @@
+<div class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-7xl">
+    <div
+      class="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:flex-row md:items-start md:justify-between md:p-6"
+    >
+      <div class="flex min-w-0 items-start gap-4">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Voltar
+        </button>
+
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-teal-600">
+            Detalhes do projeto
+          </p>
+
+          <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            {{ project?.name || 'Projeto' }}
+          </h1>
+
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            Visualize informações gerais, datas importantes e acompanhe o contexto do projeto.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex shrink-0 items-center gap-3">
+        <button
+          type="button"
+          (click)="goToProjects()"
+          class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+        >
+          Ver todos os projetos
+        </button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,2fr)_340px]">
+        <div class="space-y-5">
+          <div class="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="h-4 w-28 rounded bg-slate-200"></div>
+            <div class="mt-4 h-8 w-2/3 rounded bg-slate-200"></div>
+            <div class="mt-6 h-4 w-full rounded bg-slate-200"></div>
+            <div class="mt-2 h-4 w-11/12 rounded bg-slate-200"></div>
+            <div class="mt-2 h-4 w-10/12 rounded bg-slate-200"></div>
+          </div>
+
+          <div class="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="h-6 w-40 rounded bg-slate-200"></div>
+            <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div class="h-28 rounded-xl bg-slate-100"></div>
+              <div class="h-28 rounded-xl bg-slate-100"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div class="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="h-5 w-24 rounded bg-slate-200"></div>
+            <div class="mt-5 h-4 w-full rounded bg-slate-200"></div>
+            <div class="mt-3 h-4 w-4/5 rounded bg-slate-200"></div>
+            <div class="mt-3 h-4 w-3/5 rounded bg-slate-200"></div>
+          </div>
+
+          <div class="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="h-5 w-20 rounded bg-slate-200"></div>
+            <div class="mt-5 h-10 rounded-xl bg-slate-100"></div>
+            <div class="mt-3 h-10 rounded-xl bg-slate-100"></div>
+          </div>
+        </div>
+      </div>
+    } @else if (errorMessage) {
+      <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-red-800">Erro ao carregar projeto</h2>
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-red-700">
+          {{ errorMessage }}
+        </p>
+
+        <div class="mt-5 flex flex-wrap gap-3">
+          <button
+            type="button"
+            (click)="retryLoadProject()"
+            class="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+          >
+            Tentar novamente
+          </button>
+
+          <button
+            type="button"
+            (click)="goToProjects()"
+            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-200 bg-white px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+          >
+            Voltar para projetos
+          </button>
+        </div>
+      </div>
+    } @else if (project) {
+      <div class="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,2fr)_340px]">
+        <section class="space-y-5">
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-400">Projeto #{{ project.id }}</p>
+
+                <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+                  {{ project.name }}
+                </h2>
+              </div>
+
+              <span
+                class="inline-flex w-fit shrink-0 items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700"
+              >
+                Ativo
+              </span>
+            </div>
+
+            <div class="mt-6 border-t border-slate-100 pt-6">
+              <h3 class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Descrição
+              </h3>
+
+              <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
+                {{
+                  project.description || 'Este projeto ainda não possui uma descrição cadastrada.'
+                }}
+              </p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-tight text-slate-900">Próximos passos</h3>
+
+            <p class="mt-2 text-sm leading-6 text-slate-500">
+              Estruture os próximos módulos da área de detalhes para ampliar a gestão do projeto.
+            </p>
+
+            <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <p class="text-sm font-semibold text-slate-800">Tarefas do projeto</p>
+                <p class="mt-2 text-sm leading-6 text-slate-500">
+                  O próximo passo natural é integrar aqui a listagem de tarefas vinculadas a este
+                  projeto.
+                </p>
+              </div>
+
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <p class="text-sm font-semibold text-slate-800">Membros e responsáveis</p>
+                <p class="mt-2 text-sm leading-6 text-slate-500">
+                  Depois, você pode incluir responsáveis, participantes e progresso geral do
+                  projeto.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="space-y-5">
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-tight text-slate-900">Informações</h3>
+
+            <dl class="mt-5 space-y-5">
+              <div class="border-b border-slate-100 pb-4 last:border-b-0 last:pb-0">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">ID</dt>
+                <dd class="mt-2 text-sm font-medium text-slate-700">
+                  {{ project.id }}
+                </dd>
+              </div>
+
+              <div class="border-b border-slate-100 pb-4 last:border-b-0 last:pb-0">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Criado em
+                </dt>
+                <dd class="mt-2 text-sm font-medium text-slate-700">
+                  {{ formatDate(project.createdAt) }}
+                </dd>
+              </div>
+
+              <div>
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Atualizado em
+                </dt>
+                <dd class="mt-2 text-sm font-medium text-slate-700">
+                  {{ formatDate(project.updatedAt) }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold tracking-tight text-slate-900">Ações</h3>
+
+            <div class="mt-5 flex flex-col gap-3">
+              <button
+                type="button"
+                (click)="goBack()"
+                class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Voltar
+              </button>
+
+              <button
+                type="button"
+                (click)="goToProjects()"
+                class="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Ir para listagem
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    } @else {
+      <div
+        class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center shadow-sm"
+      >
+        <div
+          class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 7.5A2.5 2.5 0 0 1 5.5 5h4.379a2.5 2.5 0 0 1 1.768.732l.621.621A2.5 2.5 0 0 0 14.036 7H18.5A2.5 2.5 0 0 1 21 9.5v9A2.5 2.5 0 0 1 18.5 21h-13A2.5 2.5 0 0 1 3 18.5v-11Z"
+            />
+          </svg>
+        </div>
+
+        <h2 class="mt-4 text-xl font-semibold text-slate-900">Projeto não encontrado</h2>
+
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+          Não foi possível localizar os dados deste projeto. Verifique a navegação ou volte para a
+          listagem.
+        </p>
+
+        <button
+          type="button"
+          (click)="goToProjects()"
+          class="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-700"
+        >
+          Voltar para projetos
+        </button>
+      </div>
+    }
+  </div>
+</div>

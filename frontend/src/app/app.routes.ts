@@ -63,7 +63,15 @@ export const routes: Routes = [
       },
       {
         path: 'projects',
-        component: ProjectsComponent,
+        loadComponent: () =>
+          import('./features/projects/projects').then((m) => m.ProjectsComponent),
+      },
+      {
+        path: 'projects/:id',
+        loadComponent: () =>
+          import('./features/projects/project-details/project-details').then(
+            (m) => m.ProjectDetailsComponent,
+          ),
       },
       /**
        * Área administrativa
