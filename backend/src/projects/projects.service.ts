@@ -3,10 +3,11 @@ import { PrismaService } from '../core/prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectResponseDto } from './dto/project-response.dto';
+import { UserRole } from '../auth/decorators/role.decorator';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   private toProjectResponse(project: {
     id: number;
@@ -41,11 +42,17 @@ export class ProjectsService {
     return this.toProjectResponse(project);
   }
 
-  async findAll(userId: number): Promise<ProjectResponseDto[]> {
+  async findAll(
+    userId: number,
+    userRole: UserRole,
+  ): Promise<ProjectResponseDto[]> {
     const projects = await this.prisma.project.findMany({
-      where: {
-        ownerId: userId,
-      },
+      where:
+        userRole === 'ADMIN'
+          ? {}
+          : {
+              ownerId: userId,
+            },
       orderBy: [
         {
           createdAt: 'asc',
@@ -59,12 +66,19 @@ export class ProjectsService {
     return projects.map((project) => this.toProjectResponse(project));
   }
 
-  async findOne(id: number, userId: number): Promise<ProjectResponseDto> {
+  async findOne(
+    id: number,
+    userId: number,
+    userRole: UserRole,
+  ): Promise<ProjectResponseDto> {
     const project = await this.prisma.project.findFirst({
-      where: {
-        id,
-        ownerId: userId,
-      },
+      where:
+        userRole === 'ADMIN'
+          ? { id }
+          : {
+              id,
+              ownerId: userId,
+            },
     });
 
     if (!project) {
@@ -74,17 +88,12 @@ export class ProjectsService {
     return this.toProjectResponse(project);
   }
 
-  async update(
-    id: number,
-    dto: UpdateProjectDto,
-    userId: number,
-  ): Promise<ProjectResponseDto> {
-    const project = await this.prisma.project.findUnique({
+  async update(id: number, dto: UpdateProjectDto): Promise<ProjectResponseDto> {
+    const existingProject = await this.prisma.project.findUnique({
       where: { id },
-      select: { ownerId: true },
     });
 
-    if (!project || project.ownerId !== userId) {
+    if (!existingProject) {
       throw new NotFoundException('Projeto não encontrado');
     }
 
@@ -101,13 +110,12 @@ export class ProjectsService {
     return this.toProjectResponse(updatedProject);
   }
 
-  async remove(id: number, userId: number): Promise<ProjectResponseDto> {
-    const project = await this.prisma.project.findUnique({
+  async remove(id: number): Promise<ProjectResponseDto> {
+    const existingProject = await this.prisma.project.findUnique({
       where: { id },
-      select: { ownerId: true },
     });
 
-    if (!project || project.ownerId !== userId) {
+    if (!existingProject) {
       throw new NotFoundException('Projeto não encontrado');
     }
 
