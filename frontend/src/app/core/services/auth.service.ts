@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { AuthUser, UserRole } from '../models/auth-user.model';
@@ -114,6 +114,22 @@ export class AuthService {
 
   isUser(): boolean {
     return this.hasRole('USER');
+  }
+
+  canManageProjects(): boolean {
+    return this.isAdmin();
+  }
+
+  canCreateProjects(): boolean {
+    return this.isAdmin();
+  }
+
+  canEditProjects(): boolean {
+    return this.isAdmin();
+  }
+
+  canDeleteProjects(): boolean {
+    return this.isAdmin();
   }
 
   private persistSession(response: LoginResponse): void {

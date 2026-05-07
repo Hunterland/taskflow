@@ -5,6 +5,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 
 import { ProjectsService } from '../../core/services/projects.service';
+import { AuthService } from '../../core/services/auth.service';
 import type {
   CreateProjectDto,
   ProjectResponseDto,
@@ -20,6 +21,7 @@ import type {
 })
 export class ProjectsComponent implements OnInit {
   private projectsService = inject(ProjectsService);
+  private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private fb = inject(FormBuilder);
@@ -51,6 +53,22 @@ export class ProjectsComponent implements OnInit {
 
   ngOnInit(): void {
     void this.loadProjects();
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  get canCreateProjects(): boolean {
+    return this.authService.canCreateProjects();
+  }
+
+  get canEditProjects(): boolean {
+    return this.authService.canEditProjects();
+  }
+
+  get canDeleteProjects(): boolean {
+    return this.authService.canDeleteProjects();
   }
 
   get filteredProjects(): ProjectResponseDto[] {
@@ -110,6 +128,8 @@ export class ProjectsComponent implements OnInit {
   }
 
   openCreateProject(): void {
+    if (!this.canCreateProjects) return;
+
     this.clearMessages();
 
     this.createProjectForm.reset({
@@ -129,6 +149,8 @@ export class ProjectsComponent implements OnInit {
   }
 
   async submitCreateProject(): Promise<void> {
+    if (!this.canCreateProjects) return;
+
     if (this.createProjectForm.invalid) {
       this.createProjectForm.markAllAsTouched();
       this.cdr.detectChanges();
@@ -166,6 +188,8 @@ export class ProjectsComponent implements OnInit {
   }
 
   openEditProject(project: ProjectResponseDto): void {
+    if (!this.canEditProjects) return;
+
     this.clearMessages();
     this.selectedProject = project;
 
@@ -187,6 +211,8 @@ export class ProjectsComponent implements OnInit {
   }
 
   async submitEditProject(): Promise<void> {
+    if (!this.canEditProjects) return;
+
     if (!this.selectedProject) {
       this.errorMessage = 'Nenhum projeto selecionado para edição.';
       this.cdr.detectChanges();
@@ -231,6 +257,8 @@ export class ProjectsComponent implements OnInit {
   }
 
   async deleteProject(project: ProjectResponseDto): Promise<void> {
+    if (!this.canDeleteProjects) return;
+
     const confirmed = window.confirm(`Deseja realmente excluir o projeto "${project.name}"?`);
 
     if (!confirmed) return;
