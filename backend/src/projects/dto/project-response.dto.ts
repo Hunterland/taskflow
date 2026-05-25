@@ -1,5 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class ProjectUserResponseDto {
+  @ApiProperty({ example: 2 })
+  id!: number;
+
+  @ApiProperty({ example: 'Alan Barroncas' })
+  name!: string;
+
+  @ApiProperty({ example: 'alan@email.com' })
+  email!: string;
+
+  @ApiProperty({ example: 'ADMIN', enum: ['USER', 'ADMIN'] })
+  role!: 'USER' | 'ADMIN';
+}
+
 export class ProjectResponseDto {
   @ApiProperty({ example: 1 })
   id!: number;
@@ -22,4 +36,24 @@ export class ProjectResponseDto {
 
   @ApiProperty({ example: '2026-04-25T12:00:00.000Z' })
   updatedAt!: Date;
+
+  @ApiProperty({
+    type: ProjectUserResponseDto,
+    isArray: true,
+    example: [
+      {
+        id: 2,
+        name: 'Alan Barroncas',
+        email: 'alan@email.com',
+        role: 'ADMIN',
+      },
+      {
+        id: 5,
+        name: 'Maria Silva',
+        email: 'maria@email.com',
+        role: 'USER',
+      },
+    ],
+  })
+  users!: ProjectUserResponseDto[];
 }
