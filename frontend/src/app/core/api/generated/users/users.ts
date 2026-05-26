@@ -5,7 +5,7 @@
  * Taskflow Backend com JWT + Prisma
  * OpenAPI spec version: 1.0
  */
-import type { UpdateUserDto } from '.././model';
+import type { UpdateUserDto, UsersControllerFindOptionsParams } from '.././model';
 
 import { customInstance } from '../../mutator';
 
@@ -20,6 +20,12 @@ export const usersControllerFindMe = () => {
  */
 export const usersControllerFindAll = () => {
   return customInstance<void>({ url: `/users`, method: 'GET' });
+};
+/**
+ * @summary Buscar usuários por nome ou e-mail para seleção em projetos (apenas ADMIN)
+ */
+export const usersControllerFindOptions = (params?: UsersControllerFindOptionsParams) => {
+  return customInstance<void>({ url: `/users/options`, method: 'GET', params });
 };
 /**
  * @summary Atualizar usuário por ID (apenas ADMIN)
@@ -37,6 +43,9 @@ export type UsersControllerFindMeResult = NonNullable<
 >;
 export type UsersControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof usersControllerFindAll>>
+>;
+export type UsersControllerFindOptionsResult = NonNullable<
+  Awaited<ReturnType<typeof usersControllerFindOptions>>
 >;
 export type UsersControllerUpdateResult = NonNullable<
   Awaited<ReturnType<typeof usersControllerUpdate>>

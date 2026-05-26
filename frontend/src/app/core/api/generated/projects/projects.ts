@@ -10,7 +10,7 @@ import type { CreateProjectDto, ProjectResponseDto, UpdateProjectDto } from '../
 import { customInstance } from '../../mutator';
 
 /**
- * @summary Criar projeto do usuário autenticado
+ * @summary Criar projeto (apenas admin)
  */
 export const projectsControllerCreate = (createProjectDto: CreateProjectDto) => {
   return customInstance<ProjectResponseDto>({
@@ -21,19 +21,19 @@ export const projectsControllerCreate = (createProjectDto: CreateProjectDto) => 
   });
 };
 /**
- * @summary Listar projetos do usuário autenticado
+ * @summary Listar projetos acessíveis ao usuário autenticado
  */
 export const projectsControllerFindAll = () => {
   return customInstance<ProjectResponseDto[]>({ url: `/projects`, method: 'GET' });
 };
 /**
- * @summary Obter detalhes de um projeto do owner
+ * @summary Obter detalhes de um projeto acessível ao usuário
  */
 export const projectsControllerFindOne = (id: string) => {
   return customInstance<ProjectResponseDto>({ url: `/projects/${id}`, method: 'GET' });
 };
 /**
- * @summary Atualizar projeto do owner
+ * @summary Atualizar projeto (apenas admin)
  */
 export const projectsControllerUpdate = (id: string, updateProjectDto: UpdateProjectDto) => {
   return customInstance<ProjectResponseDto>({
@@ -44,7 +44,7 @@ export const projectsControllerUpdate = (id: string, updateProjectDto: UpdatePro
   });
 };
 /**
- * @summary Remover projeto e suas tasks
+ * @summary Remover projeto e suas tasks (apenas admin)
  */
 export const projectsControllerRemove = (id: string) => {
   return customInstance<ProjectResponseDto>({ url: `/projects/${id}`, method: 'DELETE' });

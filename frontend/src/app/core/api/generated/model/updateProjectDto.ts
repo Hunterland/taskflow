@@ -8,5 +8,8 @@
 
 export interface UpdateProjectDto {
   name?: string;
-  description?: string;
+  /** @nullable */
+  description?: string | null;
+  /** IDs dos usuários responsáveis associados ao projeto */
+  userIds?: number[];
 }

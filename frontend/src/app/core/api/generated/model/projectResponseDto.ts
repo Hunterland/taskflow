@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { ProjectResponseDtoDescription } from './projectResponseDtoDescription';
+import type { ProjectUserResponseDto } from './projectUserResponseDto';
 
 export interface ProjectResponseDto {
   id: number;
@@ -15,4 +16,5 @@ export interface ProjectResponseDto {
   ownerId: number;
   createdAt: string;
   updatedAt: string;
+  users: ProjectUserResponseDto[];
 }
