@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserOptionResponseDto {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 2 })
   id!: number;
 
   @ApiProperty({ example: 'Alan Barroncas' })
@@ -10,6 +10,9 @@ export class UserOptionResponseDto {
   @ApiProperty({ example: 'alan@email.com' })
   email!: string;
 
-  @ApiProperty({ example: 'ADMIN', enum: ['USER', 'ADMIN'] })
+  @ApiProperty({
+    example: 'ADMIN',
+    enum: ['USER', 'ADMIN'],
+  })
   role!: 'USER' | 'ADMIN';
 }

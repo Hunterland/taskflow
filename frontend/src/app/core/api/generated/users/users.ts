@@ -5,7 +5,12 @@
  * Taskflow Backend com JWT + Prisma
  * OpenAPI spec version: 1.0
  */
-import type { UpdateUserDto, UsersControllerFindOptionsParams } from '.././model';
+import type {
+  UpdateUserDto,
+  UserDto,
+  UserOptionResponseDto,
+  UsersControllerFindOptionsParams,
+} from '.././model';
 
 import { customInstance } from '../../mutator';
 
@@ -13,25 +18,25 @@ import { customInstance } from '../../mutator';
  * @summary Obter dados do usuário autenticado
  */
 export const usersControllerFindMe = () => {
-  return customInstance<void>({ url: `/users/me`, method: 'GET' });
+  return customInstance<UserDto>({ url: `/users/me`, method: 'GET' });
 };
 /**
  * @summary Listar todos os usuários (apenas ADMIN)
  */
 export const usersControllerFindAll = () => {
-  return customInstance<void>({ url: `/users`, method: 'GET' });
+  return customInstance<UserDto[]>({ url: `/users`, method: 'GET' });
 };
 /**
  * @summary Buscar usuários por nome ou e-mail para seleção em projetos (apenas ADMIN)
  */
 export const usersControllerFindOptions = (params?: UsersControllerFindOptionsParams) => {
-  return customInstance<void>({ url: `/users/options`, method: 'GET', params });
+  return customInstance<UserOptionResponseDto[]>({ url: `/users/options`, method: 'GET', params });
 };
 /**
  * @summary Atualizar usuário por ID (apenas ADMIN)
  */
 export const usersControllerUpdate = (id: string, updateUserDto: UpdateUserDto) => {
-  return customInstance<void>({
+  return customInstance<UserDto>({
     url: `/users/${id}`,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

@@ -22,4 +22,7 @@ export * from './updateTaskDto';
 export * from './updateTaskDtoAssigneeId';
 export * from './updateTaskDtoStatus';
 export * from './updateUserDto';
+export * from './userDto';
+export * from './userOptionResponseDto';
+export * from './userOptionResponseDtoRole';
 export * from './usersControllerFindOptionsParams';
