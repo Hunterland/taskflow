@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../core/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { SearchUsersQueryDto } from './dto/search-users-query.dto';
 
 @Injectable()
 export class UsersService {
@@ -32,7 +33,58 @@ export class UsersService {
         role: true,
         createdAt: true,
         updatedAt: true,
-        projects: true, // se quiser, pode limitar campos do project também
+        ownedProjects: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        projectMembers: {
+          select: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findOptions(query: SearchUsersQueryDto) {
+    const search = query.search?.trim();
+    const limit = query.limit ?? 20;
+
+    return this.prisma.user.findMany({
+      where: search
+        ? {
+            OR: [
+              {
+                name: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                email: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          }
+        : {},
+      orderBy: {
+        name: 'asc',
+      },
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
       },
     });
   }

@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards,Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiTags,
@@ -15,6 +15,7 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import { UserDto } from '../auth/dto/user-dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 import { UsersService } from './users.service';
+import { SearchUsersQueryDto } from './dto/search-users-query.dto';
 
 @ApiTags('users')
 @ApiBearerAuth('JWT')
@@ -45,6 +46,19 @@ export class UsersController {
   @ApiForbiddenResponse({ description: 'Acesso permitido apenas para ADMIN' })
   findAll() {
     return this.usersService.findAll();
+  }
+
+  // endpoint para buscar usuários por nome ou e-mail para seleção em projetos,
+  //  protegido por guardas de autenticação e autorização (apenas ADMIN pode acessar)
+  @Get('options')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Buscar usuários por nome ou e-mail para seleção em projetos (apenas ADMIN)' })
+  @ApiOkResponse({ description: 'Lista de opções de usuários retornada com sucesso' })
+  @ApiUnauthorizedResponse({ description: 'Token ausente ou inválido' })
+  @ApiForbiddenResponse({ description: 'Acesso permitido apenas para ADMIN' })
+  findOptions(@Query() query: SearchUsersQueryDto) {
+    return this.usersService.findOptions(query);
   }
 
   // endpoint para atualizar um usuário por ID, protegido por guardas de autenticação e autorização
