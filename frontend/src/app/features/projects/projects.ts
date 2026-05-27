@@ -5,12 +5,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 
 import { ProjectsService } from '../../core/services/projects.service';
+import { UsersService } from '../../core/services/users.service';
 import { AuthService } from '../../core/services/auth.service';
 import type {
   CreateProjectDto,
   ProjectResponseDto,
   UpdateProjectDto,
 } from '../../core/api/generated/model';
+import type { UserOption } from '../../core/models/user-option.model';
 
 @Component({
   selector: 'app-projects',
@@ -21,6 +23,7 @@ import type {
 })
 export class ProjectsComponent implements OnInit {
   private projectsService = inject(ProjectsService);
+  private usersService = inject(UsersService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
@@ -41,14 +44,28 @@ export class ProjectsComponent implements OnInit {
   selectedProject: ProjectResponseDto | null = null;
   projects: ProjectResponseDto[] = [];
 
+  createUserSearch = '';
+  editUserSearch = '';
+
+  createUserOptions: UserOption[] = [];
+  editUserOptions: UserOption[] = [];
+
+  selectedCreateUsers: UserOption[] = [];
+  selectedEditUsers: UserOption[] = [];
+
+  searchingCreateUsers = false;
+  searchingEditUsers = false;
+
   createProjectForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.maxLength(1000)]],
+    userIds: [[] as number[]],
   });
 
   editProjectForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.maxLength(1000)]],
+    userIds: [[] as number[]],
   });
 
   ngOnInit(): void {
@@ -135,7 +152,12 @@ export class ProjectsComponent implements OnInit {
     this.createProjectForm.reset({
       name: '',
       description: '',
+      userIds: [],
     });
+
+    this.createUserSearch = '';
+    this.createUserOptions = [];
+    this.selectedCreateUsers = [];
 
     this.isCreateModalOpen = true;
     this.cdr.detectChanges();
@@ -165,6 +187,7 @@ export class ProjectsComponent implements OnInit {
     const payload: CreateProjectDto = {
       name: formValue.name.trim(),
       description: formValue.description.trim() || undefined,
+      userIds: formValue.userIds,
     };
 
     try {
@@ -174,7 +197,12 @@ export class ProjectsComponent implements OnInit {
       this.createProjectForm.reset({
         name: '',
         description: '',
+        userIds: [],
       });
+
+      this.createUserSearch = '';
+      this.createUserOptions = [];
+      this.selectedCreateUsers = [];
 
       await this.loadProjects(false);
       this.successMessage = 'Projeto criado com sucesso.';
@@ -193,9 +221,20 @@ export class ProjectsComponent implements OnInit {
     this.clearMessages();
     this.selectedProject = project;
 
+    this.selectedEditUsers = (project.users ?? []).map((user) => ({
+      id: Number(user.id),
+      name: String(user.name),
+      email: String(user.email),
+      role: user.role,
+    }));
+
+    this.editUserSearch = '';
+    this.editUserOptions = [];
+
     this.editProjectForm.reset({
       name: String(project.name ?? ''),
       description: String(project.description ?? ''),
+      userIds: this.selectedEditUsers.map((user) => user.id),
     });
 
     this.isEditModalOpen = true;
@@ -207,6 +246,9 @@ export class ProjectsComponent implements OnInit {
 
     this.isEditModalOpen = false;
     this.selectedProject = null;
+    this.editUserSearch = '';
+    this.editUserOptions = [];
+    this.selectedEditUsers = [];
     this.cdr.detectChanges();
   }
 
@@ -233,6 +275,7 @@ export class ProjectsComponent implements OnInit {
     const payload: UpdateProjectDto = {
       name: formValue.name.trim(),
       description: formValue.description.trim() || undefined,
+      userIds: formValue.userIds,
     };
 
     try {
@@ -240,6 +283,9 @@ export class ProjectsComponent implements OnInit {
 
       this.isEditModalOpen = false;
       this.selectedProject = null;
+      this.editUserSearch = '';
+      this.editUserOptions = [];
+      this.selectedEditUsers = [];
 
       await this.loadProjects(false);
       this.successMessage = 'Projeto atualizado com sucesso.';
@@ -277,6 +323,111 @@ export class ProjectsComponent implements OnInit {
       this.deletingProjectId = null;
       this.cdr.detectChanges();
     }
+  }
+
+  async searchUsers(term: string, mode: 'create' | 'edit'): Promise<void> {
+    const normalizedTerm = term.trim();
+
+    if (mode === 'create') {
+      this.createUserSearch = term;
+      this.searchingCreateUsers = true;
+    } else {
+      this.editUserSearch = term;
+      this.searchingEditUsers = true;
+    }
+
+    if (!normalizedTerm) {
+      if (mode === 'create') {
+        this.createUserOptions = [];
+        this.searchingCreateUsers = false;
+      } else {
+        this.editUserOptions = [];
+        this.searchingEditUsers = false;
+      }
+
+      this.cdr.detectChanges();
+      return;
+    }
+
+    try {
+      const users = await this.usersService.getOptions(normalizedTerm);
+      const selectedIds = new Set(
+        (mode === 'create' ? this.selectedCreateUsers : this.selectedEditUsers).map(
+          (user) => user.id,
+        ),
+      );
+
+      const availableUsers = users.filter((user) => !selectedIds.has(user.id));
+
+      if (mode === 'create') {
+        this.createUserOptions = availableUsers;
+      } else {
+        this.editUserOptions = availableUsers;
+      }
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+
+      if (mode === 'create') {
+        this.createUserOptions = [];
+      } else {
+        this.editUserOptions = [];
+      }
+    } finally {
+      if (mode === 'create') {
+        this.searchingCreateUsers = false;
+      } else {
+        this.searchingEditUsers = false;
+      }
+
+      this.cdr.detectChanges();
+    }
+  }
+
+  selectUser(user: UserOption, mode: 'create' | 'edit'): void {
+    if (mode === 'create') {
+      const exists = this.selectedCreateUsers.some((item) => item.id === user.id);
+      if (exists) return;
+
+      this.selectedCreateUsers = [...this.selectedCreateUsers, user];
+      this.createUserSearch = '';
+      this.createUserOptions = [];
+      this.syncSelectedUsers('create');
+    } else {
+      const exists = this.selectedEditUsers.some((item) => item.id === user.id);
+      if (exists) return;
+
+      this.selectedEditUsers = [...this.selectedEditUsers, user];
+      this.editUserSearch = '';
+      this.editUserOptions = [];
+      this.syncSelectedUsers('edit');
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  removeUser(userId: number, mode: 'create' | 'edit'): void {
+    if (mode === 'create') {
+      this.selectedCreateUsers = this.selectedCreateUsers.filter((user) => user.id !== userId);
+      this.syncSelectedUsers('create');
+    } else {
+      this.selectedEditUsers = this.selectedEditUsers.filter((user) => user.id !== userId);
+      this.syncSelectedUsers('edit');
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  syncSelectedUsers(mode: 'create' | 'edit'): void {
+    if (mode === 'create') {
+      this.createProjectForm.patchValue({
+        userIds: this.selectedCreateUsers.map((user) => user.id),
+      });
+      return;
+    }
+
+    this.editProjectForm.patchValue({
+      userIds: this.selectedEditUsers.map((user) => user.id),
+    });
   }
 
   retryLoadProjects(): void {
