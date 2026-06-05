@@ -12,7 +12,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 @Injectable()
 export class TasksService {
   constructor(private readonly prisma: PrismaService) {}
-  
+
   // Definindo um include padrão para evitar repetição de código nas queries
   private readonly taskInclude = {
     project: {
@@ -31,7 +31,7 @@ export class TasksService {
       },
     },
   } as const;
-  
+
   // Método para verificar se o usuário é o dono do projeto, usado em várias operações
   private async ensureProjectOwnerAccess(projectId: number, userId: number) {
     const project = await this.prisma.project.findUnique({
@@ -52,7 +52,7 @@ export class TasksService {
 
     return project;
   }
-  
+
   // Método para verificar se o assignee existe, usado na criação e atualização de tasks
   private async ensureAssigneeExists(assigneeId: number) {
     const user = await this.prisma.user.findUnique({
@@ -66,7 +66,7 @@ export class TasksService {
 
     return user;
   }
-  
+
   // Implementação dos métodos de criação, leitura,
   // atualização e exclusão de tasks, utilizando os métodos auxiliares
   // para validação de acesso e existência de recursos relacionados
@@ -95,21 +95,27 @@ export class TasksService {
       include: this.taskInclude,
     });
   }
-  
+
   // O método findAll retorna todas as tasks dos projetos que o usuário é dono,
   // incluindo informações
-  async findAll(userId: number) {
+  async findAll(
+    userId: number,
+    filters?: { status?: TaskStatus; projectId?: number; assigneeId?: number },
+  ) {
     return this.prisma.task.findMany({
       where: {
         project: {
           ownerId: userId,
         },
+        ...(filters?.status && { status: filters.status }),
+        ...(filters?.projectId && { projectId: filters.projectId }),
+        ...(filters?.assigneeId && { assigneeId: filters.assigneeId }),
       },
       include: this.taskInclude,
       orderBy: { updatedAt: 'desc' },
     });
   }
-  
+
   // O método findByProject retorna as tasks de um projeto específico, verificando
   // se o usuário tem acesso ao projeto antes de realizar a consulta
   async findByProject(projectId: number, userId: number) {
@@ -130,7 +136,7 @@ export class TasksService {
       orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }],
     });
   }
-   
+
   // O método findOne retorna os detalhes de uma task específica, verificando se o
   // usuário é o dono do projeto antes de realizar a consulta
   async findOne(id: number, userId: number) {
@@ -149,7 +155,7 @@ export class TasksService {
 
     return task;
   }
-  
+
   // O método update permite atualizar os detalhes de uma task, verificando se o usuário
   // é o dono
   async update(id: number, dto: UpdateTaskDto, userId: number) {
@@ -196,8 +202,8 @@ export class TasksService {
       include: this.taskInclude,
     });
   }
-  
-  // O método remove permite excluir uma task, verificando se o usuário é o dono do projeto 
+
+  // O método remove permite excluir uma task, verificando se o usuário é o dono do projeto
   async remove(id: number, userId: number) {
     const task = await this.prisma.task.findUnique({
       where: { id },
@@ -223,7 +229,7 @@ export class TasksService {
       where: { id },
     });
   }
-  
+
   // O método findByAssignee retorna as tasks atribuídas a um usuário específico,
   // com filtros opcionais por status e projeto, verificando se o usuário é o dono
   // do projeto antes de realizar a consulta
