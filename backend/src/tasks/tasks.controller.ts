@@ -56,7 +56,8 @@ export class TasksController {
 
   @Get()
   @ApiOperation({
-    summary: 'Listar tasks do usuário autenticado com filtros opcionais',
+    summary:
+      'Listar tasks dos projetos do usuário autenticado com filtros opcionais',
   })
   @ApiOkResponse({
     description: 'Tasks retornadas com sucesso',
@@ -70,7 +71,8 @@ export class TasksController {
 
   @Get('my-tasks')
   @ApiOperation({
-    summary: 'Listar minhas tasks como assignee, com filtros opcionais',
+    summary:
+      'Listar tasks atribuídas ao usuário autenticado, com filtros opcionais',
   })
   @ApiOkResponse({
     description: 'Tasks atribuídas retornadas com sucesso',
