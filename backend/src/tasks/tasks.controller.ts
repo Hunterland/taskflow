@@ -72,7 +72,7 @@ export class TasksController {
   @Get('my-tasks')
   @ApiOperation({
     summary:
-      'Listar tasks atribuídas ao usuário autenticado, com filtros opcionais',
+      'Listar tasks atribuídas ao usuário autenticado, qcom filtros opcionais',
   })
   @ApiOkResponse({
     description: 'Tasks atribuídas retornadas com sucesso',
