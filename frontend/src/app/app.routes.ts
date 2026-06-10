@@ -73,6 +73,10 @@ export const routes: Routes = [
             (m) => m.ProjectDetailsComponent,
           ),
       },
+      {
+        path: 'tasks',
+        loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASKS_ROUTES),
+      },
       /**
        * Área administrativa
        */

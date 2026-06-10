@@ -1,0 +1,60 @@
+<div class="tasks-page">
+  <header class="tasks-page__header">
+    <div>
+      <p class="tasks-page__eyebrow">Tasks</p>
+      <h1>Gerenciamento de tarefas</h1>
+      <p class="tasks-page__subtitle">Acompanhe, filtre e organize as tarefas do projeto.</p>
+    </div>
+
+    <div class="tasks-page__actions">
+      <button type="button" (click)="refresh()" [disabled]="loading() || submitting()">
+        Atualizar
+      </button>
+
+      <button type="button" (click)="toggleView()">
+        {{ viewMode() === 'list' ? 'Ver Kanban' : 'Ver Lista' }}
+      </button>
+    </div>
+  </header>
+
+  <section class="tasks-page__scope">
+    <button
+      type="button"
+      (click)="showAllTasks()"
+      [class.is-active]="currentScope() === 'all'"
+      [disabled]="loading()"
+    >
+      Todas
+    </button>
+
+    <button
+      type="button"
+      (click)="showMyTasks()"
+      [class.is-active]="currentScope() === 'my-tasks'"
+      [disabled]="loading()"
+    >
+      Minhas tasks
+    </button>
+  </section>
+
+  <section class="tasks-page__content">
+    @if (loading()) {
+      <p>Carregando tasks...</p>
+    } @else if (error()) {
+      <p>{{ error() }}</p>
+    } @else if (!hasTasks()) {
+      <p>Nenhuma task encontrada.</p>
+    } @else {
+      @if (viewMode() === 'list') {
+        <app-task-list
+          [tasks]="tasks()"
+          (open)="onOpenTask($event)"
+          (edit)="onEditTask($event)"
+          (remove)="onRemoveTask($event)"
+        />
+      } @else {
+        <p>Kanban será adicionado em seguida.</p>
+      }
+    }
+  </section>
+</div>

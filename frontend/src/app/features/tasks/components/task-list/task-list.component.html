@@ -1,0 +1,14 @@
+<div class="task-list">
+  @for (task of tasks(); track task.id) {
+    <app-task-card
+      [task]="task"
+      (edit)="onEdit($event)"
+      (remove)="onRemove($event)"
+      (open)="onOpen($event)"
+    />
+  }
+
+  @if (!tasks().length) {
+    <p class="task-list__empty">Nenhuma task encontrada.</p>
+  }
+</div>

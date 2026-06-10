@@ -1,0 +1,50 @@
+.tasks-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.tasks-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tasks-page__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.tasks-page__subtitle {
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+
+.tasks-page__actions,
+.tasks-page__scope {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.tasks-page__scope button.is-active {
+  font-weight: 700;
+}
+
+.tasks-page__content {
+  display: grid;
+  gap: 1rem;
+}
+
+.tasks-page__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-card {
+  padding: 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.75rem;
+}

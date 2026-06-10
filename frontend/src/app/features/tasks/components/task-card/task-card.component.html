@@ -1,0 +1,28 @@
+<article class="task-card" (click)="onOpen()">
+  <div class="task-card__header">
+    <div>
+      <h3 class="task-card__title">{{ task().title }}</h3>
+      <p class="task-card__project">{{ projectName() }}</p>
+    </div>
+
+    <span class="task-card__status task-card__status--{{ task().status.toLowerCase() }}">
+      {{ task().status }}
+    </span>
+  </div>
+
+  @if (task().description) {
+    <p class="task-card__description">{{ task().description }}</p>
+  }
+
+  <div class="task-card__meta">
+    <span>Responsável: {{ assigneeName() }}</span>
+    @if (task().dueDate) {
+      <span>Prazo: {{ task().dueDate | date: 'dd/MM/yyyy' }}</span>
+    }
+  </div>
+
+  <div class="task-card__actions" (click)="$event.stopPropagation()">
+    <button type="button" (click)="onEdit()">Editar</button>
+    <button type="button" (click)="onRemove()">Excluir</button>
+  </div>
+</article>

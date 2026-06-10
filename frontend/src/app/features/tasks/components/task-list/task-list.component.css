@@ -1,0 +1,10 @@
+.task-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-list__empty {
+  padding: 1rem;
+  opacity: 0.75;
+  text-align: center;
+}
