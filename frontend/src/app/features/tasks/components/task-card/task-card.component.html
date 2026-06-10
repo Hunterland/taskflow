@@ -1,28 +1,47 @@
 <article class="task-card" (click)="onOpen()">
-  <div class="task-card__header">
-    <div>
-      <h3 class="task-card__title">{{ task().title }}</h3>
+  <header class="task-card__header">
+    <div class="task-card__heading">
       <p class="task-card__project">{{ projectName() }}</p>
+      <h3 class="task-card__title">{{ task().title }}</h3>
     </div>
 
-    <span class="task-card__status task-card__status--{{ task().status.toLowerCase() }}">
+    <span
+      class="task-card__status"
+      [class.task-card__status--todo]="task().status === 'TODO'"
+      [class.task-card__status--in-progress]="task().status === 'IN_PROGRESS'"
+      [class.task-card__status--done]="task().status === 'DONE'"
+    >
       {{ task().status }}
     </span>
-  </div>
+  </header>
 
   @if (task().description) {
-    <p class="task-card__description">{{ task().description }}</p>
+    <p class="task-card__description">
+      {{ task().description }}
+    </p>
   }
 
   <div class="task-card__meta">
-    <span>Responsável: {{ assigneeName() }}</span>
-    @if (task().dueDate) {
-      <span>Prazo: {{ task().dueDate | date: 'dd/MM/yyyy' }}</span>
-    }
+    <div class="task-card__meta-item">
+      <span class="task-card__meta-label">Responsável</span>
+      <strong>{{ assigneeName() }}</strong>
+    </div>
+
+    <div class="task-card__meta-item">
+      <span class="task-card__meta-label">Prazo</span>
+      <strong>
+        {{ task().dueDate ? (task().dueDate | date: 'dd/MM/yyyy') : 'Sem prazo' }}
+      </strong>
+    </div>
   </div>
 
-  <div class="task-card__actions" (click)="$event.stopPropagation()">
-    <button type="button" (click)="onEdit()">Editar</button>
-    <button type="button" (click)="onRemove()">Excluir</button>
-  </div>
+  <footer class="task-card__actions" (click)="$event.stopPropagation()">
+    <button type="button" class="task-card__button task-card__button--ghost" (click)="onEdit()">
+      Editar
+    </button>
+
+    <button type="button" class="task-card__button task-card__button--danger" (click)="onRemove()">
+      Excluir
+    </button>
+  </footer>
 </article>
