@@ -1,0 +1,60 @@
+<div class="task-form-modal__backdrop" (click)="onBackdropClick()">
+  <section
+    class="task-form-modal"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'task-form-modal-title'"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="task-form-modal__header">
+      <div>
+        <p class="task-form-modal__eyebrow">
+          {{ mode() === 'create' ? 'Criar task' : 'Editar task' }}
+        </p>
+        <h2 id="task-form-modal-title" class="task-form-modal__title">
+          {{ title }}
+        </h2>
+        <p class="task-form-modal__subtitle">
+          {{ description }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="task-form-modal__icon-button"
+        aria-label="Fechar modal"
+        (click)="onClose()"
+      >
+        ✕
+      </button>
+    </header>
+
+    <div class="task-form-modal__body">
+      <div class="task-form-modal__placeholder">
+        <p>Estrutura inicial do modal pronta.</p>
+        <p>
+          O próximo passo é conectar aqui o formulário com título, descrição, status, prazo, projeto
+          e responsável.
+        </p>
+      </div>
+    </div>
+
+    <footer class="task-form-modal__actions">
+      <button
+        type="button"
+        class="task-form-modal__button task-form-modal__button--ghost"
+        (click)="onClose()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="task-form-modal__button task-form-modal__button--primary"
+        (click)="onSave()"
+      >
+        {{ mode() === 'create' ? 'Criar tarefa' : 'Salvar alterações' }}
+      </button>
+    </footer>
+  </section>
+</div>
