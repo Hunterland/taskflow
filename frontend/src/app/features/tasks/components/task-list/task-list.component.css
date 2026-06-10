@@ -1,10 +1,23 @@
 .task-list {
   display: grid;
   gap: 1rem;
+  max-width: 1120px;
 }
 
 .task-list__empty {
-  padding: 1rem;
-  opacity: 0.75;
+  padding: 2rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 1rem;
+  background: #ffffff;
   text-align: center;
+}
+
+.task-list__empty h3 {
+  margin: 0 0 0.5rem;
+  color: #0f172a;
+}
+
+.task-list__empty p {
+  margin: 0;
+  color: #64748b;
 }
