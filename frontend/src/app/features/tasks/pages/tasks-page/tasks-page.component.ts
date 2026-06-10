@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { TaskListComponent } from '../../components/task-list/task-list.component';
 import { TasksFacade } from '../../facade/tasks.facade';
+import { TaskFormModalComponent } from '../../components/task-form-modal/task-form-modal.component';
 
 @Component({
   selector: 'app-tasks-page',
   standalone: true,
-  imports: [CommonModule, TaskListComponent],
+  imports: [CommonModule, TaskListComponent, TaskFormModalComponent],
   templateUrl: './tasks-page.component.html',
   styleUrl: './tasks-page.component.css',
 })
@@ -21,6 +22,10 @@ export class TasksPageComponent implements OnInit {
 
   readonly viewMode = signal<'list' | 'kanban'>('list');
   readonly currentScope = signal<'all' | 'my-tasks'>('all');
+
+  readonly isTaskModalOpen = signal(false);
+  readonly taskModalMode = signal<'create' | 'edit'>('create');
+  readonly selectedTaskId = signal<number | null>(null);
 
   ngOnInit(): void {
     void this.loadTasks();
@@ -57,8 +62,31 @@ export class TasksPageComponent implements OnInit {
     console.log('Abrir detalhes da task:', taskId);
   }
 
+  onCreateTask(): void {
+    this.taskModalMode.set('create');
+    this.selectedTaskId.set(null);
+    this.isTaskModalOpen.set(true);
+
+    console.log('Abrir modal de criação');
+  }
+
   onEditTask(taskId: number): void {
-    console.log('Editar task:', taskId);
+    this.taskModalMode.set('edit');
+    this.selectedTaskId.set(taskId);
+    this.isTaskModalOpen.set(true);
+
+    console.log('Abrir modal de edição da task:', taskId);
+  }
+
+  closeTaskModal(): void {
+    this.isTaskModalOpen.set(false);
+    this.selectedTaskId.set(null);
+    this.taskModalMode.set('create');
+  }
+
+  async onTaskSaved(): Promise<void> {
+    this.closeTaskModal();
+    await this.refresh();
   }
 
   async onRemoveTask(taskId: number): Promise<void> {

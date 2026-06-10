@@ -1,60 +1,105 @@
 <div class="tasks-page">
-  <header class="tasks-page__header">
-    <div>
+  <header class="tasks-page__hero">
+    <div class="tasks-page__hero-copy">
       <p class="tasks-page__eyebrow">Tasks</p>
-      <h1>Gerenciamento de tarefas</h1>
-      <p class="tasks-page__subtitle">Acompanhe, filtre e organize as tarefas do projeto.</p>
+      <h1 class="tasks-page__title">Gerenciamento de tarefas</h1>
+      <p class="tasks-page__subtitle">
+        Acompanhe, filtre e organize as tarefas do projeto com uma visualização simples e pronta
+        para evoluir para Kanban.
+      </p>
     </div>
 
-    <div class="tasks-page__actions">
-      <button type="button" (click)="refresh()" [disabled]="loading() || submitting()">
+    <div class="tasks-page__hero-actions">
+      <button
+        type="button"
+        class="tasks-page__button tasks-page__button--secondary"
+        (click)="refresh()"
+        [disabled]="loading() || submitting()"
+      >
         Atualizar
       </button>
 
-      <button type="button" (click)="toggleView()">
-        {{ viewMode() === 'list' ? 'Ver Kanban' : 'Ver Lista' }}
+      <button
+        type="button"
+        class="tasks-page__button tasks-page__button--primary"
+        (click)="onCreateTask()"
+      >
+        Nova tarefa
       </button>
     </div>
   </header>
 
-  <section class="tasks-page__scope">
-    <button
-      type="button"
-      (click)="showAllTasks()"
-      [class.is-active]="currentScope() === 'all'"
-      [disabled]="loading()"
-    >
-      Todas
-    </button>
+  <section class="tasks-page__toolbar">
+    <div class="tasks-page__filters">
+      <button
+        type="button"
+        class="tasks-page__chip"
+        [class.is-active]="currentScope() === 'all'"
+        [attr.aria-pressed]="currentScope() === 'all'"
+        (click)="showAllTasks()"
+        [disabled]="loading()"
+      >
+        Todas
+      </button>
 
-    <button
-      type="button"
-      (click)="showMyTasks()"
-      [class.is-active]="currentScope() === 'my-tasks'"
-      [disabled]="loading()"
-    >
-      Minhas tasks
-    </button>
+      <button
+        type="button"
+        class="tasks-page__chip"
+        [class.is-active]="currentScope() === 'my-tasks'"
+        [attr.aria-pressed]="currentScope() === 'my-tasks'"
+        (click)="showMyTasks()"
+        [disabled]="loading()"
+      >
+        Minhas tasks
+      </button>
+    </div>
+
+    <div class="tasks-page__toolbar-actions">
+      <button
+        type="button"
+        class="tasks-page__button tasks-page__button--ghost"
+        (click)="toggleView()"
+      >
+        {{ viewMode() === 'list' ? 'Ver Kanban' : 'Ver Lista' }}
+      </button>
+    </div>
   </section>
 
   <section class="tasks-page__content">
     @if (loading()) {
-      <p>Carregando tasks...</p>
+      <div class="tasks-page__state">
+        <h3>Carregando tarefas</h3>
+        <p>Aguarde enquanto buscamos os dados mais recentes.</p>
+      </div>
     } @else if (error()) {
-      <p>{{ error() }}</p>
-    } @else if (!hasTasks()) {
-      <p>Nenhuma task encontrada.</p>
+      <div class="tasks-page__state tasks-page__state--error">
+        <h3>Não foi possível carregar as tarefas</h3>
+        <p>{{ error() }}</p>
+      </div>
+    } @else if (viewMode() === 'list') {
+      <app-task-list
+        [tasks]="tasks()"
+        (open)="onOpenTask($event)"
+        (edit)="onEditTask($event)"
+        (remove)="onRemoveTask($event)"
+      />
     } @else {
-      @if (viewMode() === 'list') {
-        <app-task-list
-          [tasks]="tasks()"
-          (open)="onOpenTask($event)"
-          (edit)="onEditTask($event)"
-          (remove)="onRemoveTask($event)"
-        />
-      } @else {
-        <p>Kanban será adicionado em seguida.</p>
-      }
+      <div class="tasks-page__state">
+        <h3>Visualização Kanban em preparação</h3>
+        <p>
+          A estrutura de listagem já está pronta e o próximo passo é organizar as tarefas por
+          coluna.
+        </p>
+      </div>
+    }
+
+    @if (isTaskModalOpen()) {
+      <app-task-form-modal
+        [mode]="taskModalMode()"
+        [taskId]="selectedTaskId()"
+        (close)="closeTaskModal()"
+        (saved)="onTaskSaved()"
+      />
     }
   </section>
 </div>
