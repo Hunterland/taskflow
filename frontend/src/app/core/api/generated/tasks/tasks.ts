@@ -5,7 +5,13 @@
  * Taskflow Backend com JWT + Prisma
  * OpenAPI spec version: 1.0
  */
-import type { CreateTaskDto, TasksControllerFindMyTasksParams, UpdateTaskDto } from '.././model';
+import type {
+  CreateTaskDto,
+  TaskResponseDto,
+  TasksControllerFindAllParams,
+  TasksControllerFindMyTasksParams,
+  UpdateTaskDto,
+} from '.././model';
 
 import { customInstance } from '../../mutator';
 
@@ -13,7 +19,7 @@ import { customInstance } from '../../mutator';
  * @summary Criar task em um projeto do usuário autenticado
  */
 export const tasksControllerCreate = (createTaskDto: CreateTaskDto) => {
-  return customInstance<void>({
+  return customInstance<TaskResponseDto>({
     url: `/tasks`,
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -21,22 +27,34 @@ export const tasksControllerCreate = (createTaskDto: CreateTaskDto) => {
   });
 };
 /**
- * @summary Listar tasks do usuário autenticado
+ * @summary Listar tasks dos projetos do usuário autenticado com filtros opcionais
  */
-export const tasksControllerFindAll = () => {
-  return customInstance<void>({ url: `/tasks`, method: 'GET' });
+export const tasksControllerFindAll = (params?: TasksControllerFindAllParams) => {
+  return customInstance<TaskResponseDto[]>({ url: `/tasks`, method: 'GET', params });
+};
+/**
+ * @summary Listar tasks atribuídas ao usuário autenticado, qcom filtros opcionais
+ */
+export const tasksControllerFindMyTasks = (params?: TasksControllerFindMyTasksParams) => {
+  return customInstance<TaskResponseDto[]>({ url: `/tasks/my-tasks`, method: 'GET', params });
+};
+/**
+ * @summary Listar tasks de um projeto para o kanban
+ */
+export const tasksControllerFindByProject = (projectId: number) => {
+  return customInstance<TaskResponseDto[]>({ url: `/tasks/project/${projectId}`, method: 'GET' });
 };
 /**
  * @summary Obter detalhes de uma task do owner
  */
-export const tasksControllerFindOne = (id: string) => {
-  return customInstance<void>({ url: `/tasks/${id}`, method: 'GET' });
+export const tasksControllerFindOne = (id: number) => {
+  return customInstance<TaskResponseDto>({ url: `/tasks/${id}`, method: 'GET' });
 };
 /**
  * @summary Atualizar task do owner
  */
-export const tasksControllerUpdate = (id: string, updateTaskDto: UpdateTaskDto) => {
-  return customInstance<void>({
+export const tasksControllerUpdate = (id: number, updateTaskDto: UpdateTaskDto) => {
+  return customInstance<TaskResponseDto>({
     url: `/tasks/${id}`,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -46,26 +64,20 @@ export const tasksControllerUpdate = (id: string, updateTaskDto: UpdateTaskDto) 
 /**
  * @summary Remover task do owner
  */
-export const tasksControllerRemove = (id: string) => {
-  return customInstance<void>({ url: `/tasks/${id}`, method: 'DELETE' });
-};
-/**
- * @summary Listar minhas tasks como assignee, com filtro opcional por status
- */
-export const tasksControllerFindMyTasks = (params?: TasksControllerFindMyTasksParams) => {
-  return customInstance<void>({ url: `/tasks/my-tasks`, method: 'GET', params });
-};
-/**
- * @summary Listar tasks de um projeto para o kanban
- */
-export const tasksControllerFindByProject = (projectId: string) => {
-  return customInstance<void>({ url: `/tasks/project/${projectId}`, method: 'GET' });
+export const tasksControllerRemove = (id: number) => {
+  return customInstance<TaskResponseDto>({ url: `/tasks/${id}`, method: 'DELETE' });
 };
 export type TasksControllerCreateResult = NonNullable<
   Awaited<ReturnType<typeof tasksControllerCreate>>
 >;
 export type TasksControllerFindAllResult = NonNullable<
   Awaited<ReturnType<typeof tasksControllerFindAll>>
+>;
+export type TasksControllerFindMyTasksResult = NonNullable<
+  Awaited<ReturnType<typeof tasksControllerFindMyTasks>>
+>;
+export type TasksControllerFindByProjectResult = NonNullable<
+  Awaited<ReturnType<typeof tasksControllerFindByProject>>
 >;
 export type TasksControllerFindOneResult = NonNullable<
   Awaited<ReturnType<typeof tasksControllerFindOne>>
@@ -75,10 +87,4 @@ export type TasksControllerUpdateResult = NonNullable<
 >;
 export type TasksControllerRemoveResult = NonNullable<
   Awaited<ReturnType<typeof tasksControllerRemove>>
->;
-export type TasksControllerFindMyTasksResult = NonNullable<
-  Awaited<ReturnType<typeof tasksControllerFindMyTasks>>
->;
-export type TasksControllerFindByProjectResult = NonNullable<
-  Awaited<ReturnType<typeof tasksControllerFindByProject>>
 >;

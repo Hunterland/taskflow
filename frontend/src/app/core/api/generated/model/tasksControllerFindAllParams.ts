@@ -5,9 +5,9 @@
  * Taskflow Backend com JWT + Prisma
  * OpenAPI spec version: 1.0
  */
-import type { TasksControllerFindMyTasksStatus } from './tasksControllerFindMyTasksStatus';
+import type { TasksControllerFindAllStatus } from './tasksControllerFindAllStatus';
 
-export type TasksControllerFindMyTasksParams = {
+export type TasksControllerFindAllParams = {
   /**
    * Filtrar tasks por ID do projeto
    * @minimum 1
@@ -21,5 +21,5 @@ export type TasksControllerFindMyTasksParams = {
   /**
    * Filtrar tasks por status
    */
-  status?: TasksControllerFindMyTasksStatus;
+  status?: TasksControllerFindAllStatus;
 };
